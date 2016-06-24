@@ -1,6 +1,10 @@
-function actions({auths: {userCanUpdateProject}, models: {TeamImages}, getStuff}) {
+import Promise from 'bluebird'
+
+function actions({auths: {userCanUpdateProject}, models: {TeamImages}}) {
+  const act = Promise.promisify(this.act, {context: this})
+
   this.add({role:'TeamImages',cmd:'set'}, ({key, uid, values}, respond) => {
-    getStuff({
+    act({role:'Firebase',cmd:'get',
       team: key,
     })
     .then(({team}) =>

@@ -1,6 +1,9 @@
+import Promise from 'bluebird'
 import {omit} from 'ramda'
 
-function action({models: {Profiles, Users}, getStuff}) {
+function action({models: {Profiles, Users}}) {
+  const act = Promise.promisify(this.act, {context: this})
+
   const makeUserAndProfile = (uid, values) => {
     const profileKey = Profiles.push({...values,
       uid,
@@ -26,7 +29,7 @@ function action({models: {Profiles, Users}, getStuff}) {
 
   this.add({role:'Profiles',cmd:'update',admin:false},
           ({key, values, uid}, respond) =>
-    getStuff({profile: {uid}})
+    act({role:'Firebase',cmd:'get',profile: {uid}})
     .then(({profile}) =>
       profile.$key === key ?
       true :
@@ -37,7 +40,7 @@ function action({models: {Profiles, Users}, getStuff}) {
     .catch(err => respond(err)))
 
   this.add({role:'Profiles',cmd:'update'}, (msg, respond) =>
-    getStuff({profile: {uid: msg.uid}})
+    act({role:'Firebase',cmd:'get',profile:{uid: msg.uid}})
     .then(({profile}) =>
     this.act({
       ...msg,

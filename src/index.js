@@ -1,12 +1,9 @@
 import express from 'express'
-import Authorizations from './authorization'
-import {getStuff} from './util'
-import Seneca from 'seneca'
-import braintree from 'braintree-node'
 import Firebase from 'firebase'
+import senecaTasks from './seneca-tasks'
+import braintree from 'braintree-node'
+import Seneca from 'seneca'
 import {startDispatch} from './dispatch'
-import {makeCollections} from './collections'
-import tasks from './tasks'
 
 const requiredVars = [
   'FIREBASE_HOST',
@@ -37,9 +34,6 @@ const remote = {}
 app.get('/', (req,res) => res.send('Hello World!'))
 app.listen(cfg.PORT, () => console.log('Listening on ',cfg.PORT))
 
-const fb = new Firebase(cfg.FIREBASE_HOST)
-console.log('Connected firebase to', cfg.FIREBASE_HOST)
-
 remote.gateway = braintree({
   environment: cfg.BT_ENVIRONMENT,
   merchantId: cfg.BT_MERCHANT_ID,
@@ -47,7 +41,15 @@ remote.gateway = braintree({
   privateKey: cfg.BT_PRIVATE_KEY,
 })
 
-console.log('Authenticating...')
+const fb = new Firebase(cfg.FIREBASE_HOST)
+console.log('Connected firebase to', cfg.FIREBASE_HOST)
+
+const seneca = Seneca({
+  debug: {
+    undead: true,
+  },
+})
+seneca.use(senecaTasks, {fb, remote})
 
 fb.authWithCustomToken(cfg.FIREBASE_TOKEN.trim(), err => {
   if (err) {
@@ -55,39 +57,15 @@ fb.authWithCustomToken(cfg.FIREBASE_TOKEN.trim(), err => {
     process.exit()
   }
 
-  console.log('FB Authed successfully')
+  console.log('Authenticated to firebase')
 
-  const seneca = Seneca({
-    debug: {
-      undead: true ,
-    },
+  seneca.ready(err => {
+    if (err) {
+      console.log('Seneca err:', err)
+      process.exit()
+    }
+
+    console.log('Starting dispatch')
+    startDispatch(fb.child('!queue'), seneca)
   })
-
-  const models = makeCollections(fb, [
-    'Arrivals',
-    'Assignments',
-    'Commitments',
-    'Engagements',
-    'Fulfillers',
-    'Memberships',
-    'Opps',
-    'Organizers',
-    'Projects',
-    'ProjectImages',
-    'Profiles',
-    'Shifts',
-    'Teams',
-    'TeamImages',
-  ])
-
-  models.Users = {
-    set: (uid, profileKey) => fb.child('Users').child(uid).set(profileKey),
-  }
-
-  remote.models = models
-  remote.getStuff = getStuff(models)
-  remote.auths = Authorizations(models, remote.getStuff)
-  tasks(seneca, remote)
-
-  startDispatch(fb.child('!queue'), seneca)
 })

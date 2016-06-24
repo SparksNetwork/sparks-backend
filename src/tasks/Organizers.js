@@ -1,11 +1,11 @@
 import Promise from 'bluebird'
 import {not, unless, equals, merge} from 'ramda'
 
-function actions({auths: {userCanUpdateProject}, models: {Organizers}, getStuff}) {
+function actions({auths: {userCanUpdateProject}, models: {Organizers}}) {
   const act = Promise.promisify(this.act, {context: this})
 
   this.add({role:'Organizers',cmd:'sendEmail'}, ({key, uid}, respond) =>
-    getStuff({organizer: key})
+    act({role:'Firebase',cmd:'get', organizer: key})
     .then(({organizer}) =>
       userCanUpdateProject({uid, projectKey: organizer.projectKey})
       .then(merge({organizer}))
@@ -58,7 +58,7 @@ function actions({auths: {userCanUpdateProject}, models: {Organizers}, getStuff}
       `User ${profile.$key} cannot accept organizer invite ${organizer.$key}`))
 
   this.add({role:'Organizers',cmd:'accept'}, ({uid, key}, respond) =>
-    getStuff({
+    act({role:'Firebase',cmd:'get',
       profile: {uid},
       organizer: key,
     })
