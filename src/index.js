@@ -1,6 +1,5 @@
 import express from 'express'
-import Firebase from 'firebase'
-import senecaTasks from './seneca-tasks'
+import senecaSn from './seneca-sn'
 import braintree from 'braintree-node'
 import Seneca from 'seneca'
 import {startDispatch} from './dispatch'
@@ -41,30 +40,15 @@ remote.gateway = braintree({
   privateKey: cfg.BT_PRIVATE_KEY,
 })
 
-const fb = new Firebase(cfg.FIREBASE_HOST)
-console.log('Connected firebase to', cfg.FIREBASE_HOST)
-
 const seneca = Seneca({
   debug: {
     undead: true,
   },
 })
-seneca.use(senecaTasks, {fb, remote})
+seneca.use(senecaSn, {cfg, remote})
 
-fb.authWithCustomToken(cfg.FIREBASE_TOKEN.trim(), err => {
-  if (err) {
-    console.log('FB Auth err:',err)
-    process.exit()
-  }
-
-  console.log('Authenticated to firebase')
-
-  seneca.ready(err => {
-    if (err) {
-      console.log('Seneca err:', err)
-      process.exit()
-    }
-
+seneca.ready(() => {
+  seneca.act({role:'Firebase'}, (err, {fb}) => {
     console.log('Starting dispatch')
     startDispatch(fb.child('!queue'), seneca)
   })

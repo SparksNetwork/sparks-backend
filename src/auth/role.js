@@ -130,10 +130,10 @@ export default function() {
       respond))
   )
 
-  add({role:'Auth',cmd:'update',model:'Opps'}, ({uid, oppKey}, respond) =>
+  add({role:'Auth',cmd:'update',model:'Opps'}, ({uid, key, oppKey}, respond) =>
     act({role:'Firebase',cmd:'get',
       profile: {uid},
-      opp: oppKey,
+      opp: oppKey || key,
     })
     .then(({profile, opp}) =>
       act({role:'Firebase',cmd:'get',
