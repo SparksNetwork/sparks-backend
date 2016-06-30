@@ -14,63 +14,71 @@ function actions({getStuff, models: {Projects}}) {
       .then(project =>
         respond(null, {project, opp, profile, key, uid, profileKey}))))
 
-  this.add({role:'email',cmd:'send',email:'engagement'},
-  (
-    {profile, project, opp, key, uid, templateId, subject, sendAt = false},
-    respond
-  ) => {
-    const email = new sendgrid.Email()
-    email.addTo(profile.email)
-    email.subject = subject + ` ${project.name}`
-    email.from = 'help@sparks.network'
-    email.html = ' '
+  if (process.env.SEND_EMAILS) {
+    this.add({role:'email',cmd:'send',email:'engagement'},
+    (
+      {profile, project, opp, key, uid, templateId, subject, sendAt = false},
+      respond
+    ) => {
+      const email = new sendgrid.Email()
+      email.addTo(profile.email)
+      email.subject = subject + ` ${project.name}`
+      email.from = 'help@sparks.network'
+      email.html = ' '
 
-    email.addFilter('templates', 'enable', 1)
-    email.addFilter('templates', 'template_id', templateId)
+      email.addFilter('templates', 'enable', 1)
+      email.addFilter('templates', 'template_id', templateId)
 
-    email.addSubstitution('-username-', profile.fullName)
-    email.addSubstitution('-opp_name-', opp.name)
-    email.addSubstitution('-project_name-', project.name)
-    email.addSubstitution('-engagementurl-', `${DOMAIN}/engaged/${key}/`)
+      email.addSubstitution('-username-', profile.fullName)
+      email.addSubstitution('-opp_name-', opp.name)
+      email.addSubstitution('-project_name-', project.name)
+      email.addSubstitution('-engagementurl-', `${DOMAIN}/engaged/${key}/`)
 
-    if (sendAt) { email.setSendAt(sendAt) }
+      if (sendAt) { email.setSendAt(sendAt) }
 
-    sendgrid.send(email, (err, json) => {
-      if (err) {
-        console.error(err)
-        return respond(err)
-      }
-      console.log(json)
-      respond(null, json)
+      sendgrid.send(email, (err, json) => {
+        if (err) {
+          console.error(err)
+          return respond(err)
+        }
+        console.log(json)
+        respond(null, json)
+      })
     })
-  })
 
-  this.add({role:'email',cmd:'send',email:'organizer'},
-  ({values, project, key, templateId, subject, sendAt = false}, respond) => {
-    const email = new sendgrid.Email()
-    email.addTo(values.inviteEmail)
-    email.subject = subject + ` ${project.name}`
-    email.from = 'help@sparks.network'
-    email.setFromName('Sparks.Network')
-    email.html = ' '
+    this.add({role:'email',cmd:'send',email:'organizer'},
+    ({values, project, key, templateId, subject, sendAt = false}, respond) => {
+      const email = new sendgrid.Email()
+      email.addTo(values.inviteEmail)
+      email.subject = subject + ` ${project.name}`
+      email.from = 'help@sparks.network'
+      email.setFromName('Sparks.Network')
+      email.html = ' '
 
-    email.addFilter('templates', 'enable', 1)
-    email.addFilter('templates', 'template_id', templateId)
+      email.addFilter('templates', 'enable', 1)
+      email.addFilter('templates', 'template_id', templateId)
 
-    email.addSubstitution('-project_name-', project.name)
-    email.addSubstitution('-invite_url-', `${DOMAIN}/organize/${key}/`)
+      email.addSubstitution('-project_name-', project.name)
+      email.addSubstitution('-invite_url-', `${DOMAIN}/organize/${key}/`)
 
-    if (sendAt) { email.setSendAt(sendAt) }
+      if (sendAt) { email.setSendAt(sendAt) }
 
-    sendgrid.send(email, (err, json) => {
-      if (err) {
-        console.error(err)
-        return respond(err)
-      }
+      sendgrid.send(email, (err, json) => {
+        if (err) {
+          console.error(err)
+          return respond(err)
+        }
 
-      respond(null, json)
+        respond(null, json)
+      })
     })
-  })
+  } else {
+    this.add({role:'email',cmd:'send'}, (msg, respond) => {
+      console.log('EMAIL QUARANTINE!')
+      console.log(msg)
+      respond(null)
+    })
+  }
 }
 
 export default actions

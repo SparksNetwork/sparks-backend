@@ -1,6 +1,8 @@
 /* eslint-disable max-nested-callbacks */
 import Firebase from 'firebase'
-import {propEq, join, find, tap, concat, compose, curryN} from 'ramda'
+import {
+  propEq, join, find, tap, concat, compose, curryN, filter, prop,
+} from 'ramda'
 import {format} from 'util'
 
 const out = (...msg) => {
@@ -119,6 +121,8 @@ fb.child('Projects').once('value')
       .then(snap)
       .then(objToRows)
       .then(tap(rows => out('Found', rows.length, 'Engagements')))
+      .then(filter(prop('profileKey')))
+      .then(tap(rows => out('And of those', rows.length, 'actually have a profile')))
       .then(engs => Promise.all(engs.map(eng =>
         fb.child('Profiles').child(eng.profileKey).once('value')
         .then(snap)
