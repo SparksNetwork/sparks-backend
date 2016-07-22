@@ -28,12 +28,15 @@ export function lookupsFrom(host) {
     fb.child(m).once('value').then(snap => snap.val())
   const one = (m,k) =>
     fb.child(m).child(k).once('value').then(snap => snap.val())
+  const by = (m, f, k) =>
+    fb.child(m).orderByChild(f).equalTo(k).once('value').then(snap => snap.val())
 
   return {
     Engagements: async function() { return all('Engagements') },
     Profile: async function(key) { return one('Profiles', key) },
     Project: async function(key) { return one('Projects', key) },
     Opp: async function(key) { return one('Opps', key) },
+    Arrival: async function(key) { return by('Arrivals', 'projectKeyProfileKey', key) },
   }
 }
 
@@ -49,10 +52,11 @@ export function dummyLookups() {
     Profile: async function(key) { return {fullName: 'Profile ' + key, email: 'email', phone: 'phone'} },
     Project: async function(key) { return {name: 'Proj ' + key} },
     Opp: async function(key) { return {name: 'Opp ' + key, projectKey: 'PROJ1'} },
+    Arrival: async function(key) { return {arrivedAt: '1466771699747'} },
   }
 }
 
-export const lensFields = ({key, profile, project, opp, ...eng}) => [
+export const lensFields = ({key, profile, project, opp, arrival, ...eng}) => [
   eng.profileKey,
   profile.fullName,
   profile.email,
@@ -64,13 +68,14 @@ export const lensFields = ({key, profile, project, opp, ...eng}) => [
   project.name,
   eng.oppKey,
   opp.name,
+  arrival ? 'YES' : 'NO',
 ]
 
 const filterOrphans = pipe(filter(has('profileKey')), filter(has('oppKey')))
 
 export async function generateEmailRecords(host) {
-  const {Engagements, Profile, Project, Opp} = lookupsFrom(host)
-  // const {Engagements, Profile, Project, Opp} = dummyLookups(host)
+  const {Engagements, Profile, Project, Opp, Arrival} = lookupsFrom(host)
+  // const {Engagements, Profile, Project, Opp, Arrival} = dummyLookups(host)
 
   async function relativesFor(eng) {
     const opp = await Opp(eng.oppKey)
@@ -81,8 +86,11 @@ export async function generateEmailRecords(host) {
       Profile(eng.profileKey),
       Project(opp.projectKey),
     ])
-
-    return {...eng, profile, project, opp}
+    const pKPK = `${opp.projectKey}-${eng.profileKey}`
+    // console.log('pKPK', pKPK)
+    const arrival = await Arrival(pKPK)
+    // console.log('arrival', pKPK, arrival)
+    return {...eng, profile, project, opp, arrival}
   }
 
   const rows = pipe(toRows, filterOrphans)(await Engagements())
