@@ -83,9 +83,15 @@ function mockFirebase() {
   }
 
   this.add({role:'Firebase',cmd:'set',model:'Users'}, async function({uid, profileKey}) {
-    const lens = lensPath(['Users', uid])
+    const lens = lensPath(['users', uid])
     store = R.set(lens, profileKey, store)
     return {uid}
+  })
+
+  this.add({role:'Firebase',cmd:'get',model:'Users'}, async function({uid}) {
+    const lens = lensPath(['users', uid])
+    const profileKey = R.view(lens, store)
+    return {profileKey}
   })
 
   this.add({role:'Firebase',cmd:'push'}, async function(msg) {

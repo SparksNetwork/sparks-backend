@@ -34,6 +34,7 @@ seneca.ready(function() {
 
     testFn(`mockFirebase / ${msg}`, fnWithRestore)
   }
+  test.only = function(msg, fn) { test(msg, fn, tapeTest.only) }
 
   test('Fixtures / set / get', async function(t) {
     const store = await this.act('role:Fixtures,cmd:get')
@@ -82,8 +83,15 @@ seneca.ready(function() {
   test('Firebase / Users / set', async function(t) {
     await this.act('role:Firebase,model:Users,cmd:set,uid:123,profileKey:abc')
     const store = await this.act('role:Fixtures,cmd:get')
-    t.ok(store.Users)
-    t.equal(store.Users['123'], 'abc')
+    t.ok(store.users)
+    t.equal(store.users['123'], 'abc')
+  })
+
+  test('Firebase / Users / get', async function(t) {
+    await this.act('role:Firebase,model:Users,cmd:set,uid:123,profileKey:abc')
+    const user = await this.act('role:Firebase,model:Users,cmd:get,uid:123')
+    t.ok(user)
+    t.equal(user.profileKey, 'abc')
   })
 
   test('Firebase / push', async function(t) {
