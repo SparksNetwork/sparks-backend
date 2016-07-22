@@ -4,7 +4,7 @@ function actions({models: {Memberships}, getStuff}) {
       teamKey,
       oppKey,
       engagementKey,
-      answer,
+      answer: answer || '',
       isApplied: true,
       isAccepted: false,
       isConfirmed: false,
