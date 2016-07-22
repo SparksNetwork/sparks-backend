@@ -98,3 +98,13 @@ export async function generateEmailRecords(host) {
 
   return pipe(filter(identity), map(lensFields), toCsv)(fullRows)
 }
+
+export async function findRecord(host, collection, field, value) {
+  const fb = new Firebase(host)
+  const lookup = () =>
+    fb.child(collection).orderByChild(field).equalTo(value).once('value').then(snap => snap.val())
+  const recs = await lookup()
+  console.log('recs', recs)
+  return toRows(recs)
+  // return pipe(toRows, toCsv)(recs)
+}
