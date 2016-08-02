@@ -106,5 +106,4 @@ export async function findRecord(host, collection, field, value) {
   const recs = await lookup()
   console.log('recs', recs)
   return toRows(recs)
-  // return pipe(toRows, toCsv)(recs)
 }
