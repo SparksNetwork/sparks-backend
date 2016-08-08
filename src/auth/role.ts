@@ -378,5 +378,22 @@ export default function() {
     }
   })
 
+  add('role:Auth,model:Users,cmd:migrate', async function({uid, fromUid, toUid, profileKey}) {
+    if (uid !== toUid) { return {reject: 'Incorrect uid'} }
+    const {profile} = await get({profile: profileKey})
+    const {profileKey: oldProfileKey} = await this.act('role:Firebase,model:Users,cmd:get', {uid: fromUid})
+    const {profileKey: newProfileKey} = await this.act('role:Firebase,model:Users,cmd:get', {uid: toUid})
+
+    console.log('='.repeat(30))
+    console.log(newProfileKey)
+
+    assert(profile, 'Profile not found')
+    assert(oldProfileKey, 'Old user not found')
+    assert(!newProfileKey, 'New user found')
+    assert(profile.$key === oldProfileKey, 'Incorrect profile')
+
+    return {}
+  })
+
   return 'roles-sn'
 }

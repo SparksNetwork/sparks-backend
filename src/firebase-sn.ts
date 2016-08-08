@@ -9,6 +9,7 @@ export default function({collections, cfg: {FIREBASE_HOST, FIREBASE_TOKEN}}) {
   const models = makeCollections(fb, collections)
   models.Users = {
     set: (uid, profileKey) => fb.child('Users').child(uid).set(profileKey),
+    get: uid => fb.child('Users').child(uid).once('value').then(s => s.val()),
   }
 
   this.add({role:'Firebase'}, function(msg, respond) {
