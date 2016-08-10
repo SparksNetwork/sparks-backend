@@ -7,12 +7,13 @@
   },
   "scripts": {
     "start": "node dist/index.js",
-    "postinstall": "npm run build",
+    "heroku-postbuild": "npm run build",
     "build": "tsc",
     "test": "npm run build && node_modules/.bin/tap --cov dist/**/*.test.js src/*.test.js",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",
-    "changelog": "conventional-changelog --infile CHANGELOG.md --same-file --release-count 0 --preset angular"
+    "version": "npm run changelog",
+    "changelog": "conventional-changelog -i CHANGELOG.md -s -p angular && git add CHANGELOG.md"
   },
   "repository": {
     "type": "git",
