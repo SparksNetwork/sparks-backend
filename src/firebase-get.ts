@@ -1,3 +1,4 @@
+/// <reference path="./models.d.ts" />
 import * as Inflection from 'inflection'
 import * as BPromise from 'bluebird'
 import {
@@ -107,7 +108,7 @@ export default function firebaseGet() {
     return null
   }
 
-  function getStuff(stuff) {
+  function getStuff(stuff:Spec):Promise<FulfilledSpec> {
     const specs = mapObjIndexed((value, key) => {
       const model = compose(
         Inflection.pluralize,
@@ -147,10 +148,10 @@ export default function firebaseGet() {
       values,
     )(specs)
 
-    return BPromise.props(promises)
+    return BPromise.props(promises) as Promise<FulfilledSpec>
   }
 
-  this.add({role:'Firebase',cmd:'get'}, async function(msg) {
+  this.add({role:'Firebase',cmd:'get'}, async function(msg):Promise<FulfilledSpec> {
     if (msg.model) { return await this.prior(msg) }
 
     const spec = omit(['role','cmd','default$','meta$','tx$'], msg)

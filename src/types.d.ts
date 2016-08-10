@@ -1,25 +1,42 @@
-interface RejectResponse {
+declare interface RejectResponse {
   reject: string
 }
 
-interface ErrorResponse {
+declare interface ErrorResponse {
   error: string
 }
 
-interface PayloadResponse {
+declare interface PayloadResponse {
   domain: string
   event: string
   payload: any
 }
 
-interface KeyResponse {
+declare interface KeyResponse {
   key: string
 }
 
-interface AnyResponse {
+declare interface AnyResponse {
   [propName:string]:any
 }
 
-type DispatchResponse = RejectResponse | ErrorResponse | PayloadResponse
-type TaskResponse = KeyResponse | ErrorResponse
-type AuthResponse = RejectResponse | ErrorResponse | AnyResponse
+declare type DispatchResponse = RejectResponse | ErrorResponse | PayloadResponse
+declare type TaskResponse = KeyResponse | ErrorResponse
+declare type AuthResponse = RejectResponse | ErrorResponse | AnyResponse
+
+declare type SpecValue = string | number | boolean | Array<string>
+
+declare interface ByChildSpec {
+  [propName:string]: SpecValue
+}
+
+declare interface Spec {
+  [propName:string]: SpecValue | ByChildSpec
+}
+
+declare interface FulfilledSpec {
+  engagement:Engagement
+  commitment:Commitment
+  commitments:Commitment[]
+  [propName:string]: null | any
+}

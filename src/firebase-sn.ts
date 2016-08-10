@@ -2,6 +2,26 @@ import * as Firebase from 'firebase'
 import {makeCollections} from './collections'
 import {keys} from 'ramda'
 
+interface FirebaseValue {
+  [propName:string]:FirebaseValue | string | boolean | number
+}
+
+export function Model(model:string) {
+  return function(seneca) {
+    return {
+      push: function(values:FirebaseValue):Promise<KeyResponse> {
+         return seneca.act('role:Firebase,cmd:push', {model, values})
+      },
+      update: function(key:string, values:FirebaseValue):Promise<KeyResponse> {
+        return seneca.act('role:Firebase,cmd:update', {model, key, values})
+      },
+      remove: function(key:string):Promise<KeyResponse> {
+        return seneca.act('role:Firebase,cmd:remove', {model, key})
+      }
+    }
+  }
+}
+
 export default function({collections, cfg: {FIREBASE_HOST, FIREBASE_TOKEN}}) {
   const fb = new Firebase(FIREBASE_HOST)
   console.log('Connected firebase to', FIREBASE_HOST)

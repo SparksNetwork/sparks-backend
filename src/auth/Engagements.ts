@@ -1,5 +1,5 @@
 export default function() {
-  this.add('role:Auth,model:Engagements,cmd:create', async function({uid, values: {oppKey, profileKey}}):Promise<AuthResponse> {
+  this.add('role:Auth,model:Engagements,cmd:create', async function({uid, oppKey, profileKey}):Promise<AuthResponse> {
     const {profile, opp} = await this.act('role:Firebase,cmd:get', {
       profile: {uid},
       opp: oppKey,

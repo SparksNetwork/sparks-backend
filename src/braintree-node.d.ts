@@ -8,6 +8,6 @@ declare module "braintree-node" {
 
   type braintree = (options:Options) => Gateway
 
-  var b: braintree
+  let b: braintree
   export = b
 }
