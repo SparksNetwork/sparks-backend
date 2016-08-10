@@ -68,14 +68,14 @@ function Engagements() {
   this.add({role:'Engagements',cmd:'create'}, async function({oppKey, profileKey}) {
     const {clientToken} = await this.act('role:gateway,cmd:generateClientToken')
 
-    const {key} = await Engagements.push({values: {
+    const {key} = await Engagements.push({
       oppKey,
       profileKey,
       isApplied: true,
       isAccepted: false,
       isConfirmed: false,
       paymentClientToken: clientToken,
-    }})
+    })
 
     await this.act('role:email,cmd:send,email:engagement', {
       templateId: '96e36ab7-43b0-4d45-8309-32c52530bd8a',
@@ -106,24 +106,6 @@ function Engagements() {
     await Engagements.remove(key)
 
     return {key}
-  })
-
-  this.add('role:Engagements,cmd:sendEmail,email:accepted', async function({engagement}) {
-    const {opp} = await get({opp: engagement.oppKey})
-
-    if (opp.confirmationsOn) {
-      await this.act({
-        role:'email',
-        cmd:'send',
-        email:'engagement',
-        templateId:'dec62dab-bf8e-4000-975a-0ef6b264dafe',
-        subject:'Application accepted for',
-        profileKey: engagement.profileKey,
-        oppKey: engagement.oppKey,
-      })
-    }
-
-    return {engagement}
   })
 
   async function canChangeOpp(engagement, oppKey, userRole) {
@@ -251,8 +233,30 @@ function Engagements() {
     return {key}
   })
 
+  this.add('role:Engagements,cmd:sendEmail,email:accepted', async function({key}) {
+    const {engagement, opp} = await get({engagement: key, opp: ['engagement', 'oppKey']})
+
+    assert(engagement, 'Engagement not found')
+
+    if (opp.confirmationsOn) {
+      await this.act({
+        role:'email',
+        cmd:'send',
+        email:'engagement',
+        templateId:'dec62dab-bf8e-4000-975a-0ef6b264dafe',
+        subject:'Application accepted for',
+        profileKey: engagement.profileKey,
+        oppKey: engagement.oppKey,
+      })
+    }
+
+    return {engagement}
+  })
+
   this.add({role:'Engagements',cmd:'sendEmail',email:'confirmed'}, async function({key}) {
     const {engagement} = await get({engagement: key})
+
+    assert(engagement, 'Engagement not found')
 
     await this.act({
       role:'email',

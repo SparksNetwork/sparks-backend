@@ -6,13 +6,13 @@ const test = tape('Auth / Engagements', [role])
 const {accepts, rejects} = authTest(test)
 
 {
-  const msg = {model:'Engagements',cmd:'create',key:'volunteer',values:{oppKey: 'oppOne', profileKey: 'volunteer'}}
+  const msg = {model:'Engagements',cmd:'create',key:'volunteer',oppKey: 'oppOne', profileKey: 'volunteer'}
 
   rejects(msg)
   rejects(msg, {uid:'123'})
   rejects(msg, {uid:'teamLead'})
   rejects(msg, {uid:'volTwo'})
-  accepts(msg, {uid:'volunteer'})
+  accepts(msg, {uid:'volunteer'}, test.only)
   rejects(msg, {uid:'organizer'})
   rejects(msg, {uid:'eap'})
   accepts(msg, {uid:'admin'})
