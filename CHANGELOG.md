@@ -1,3 +1,13 @@
+<a name="1.0.1"></a>
+## [1.0.1](https://github.com/sdebaun/sparks-backend/compare/v1.0.0...v1.0.1) (2016-08-11)
+
+
+### Features
+
+* **Changelog:** Add changelog generation to circleci ([0c28d7b](https://github.com/sdebaun/sparks-backend/commit/0c28d7b))
+
+
+
 <a name="1.0.0"></a>
 # 1.0.0 (2016-08-04)
 
