@@ -1,6 +1,10 @@
 machine:
   node:
     version: 6.1.0
+    
+notify:
+  webhooks:
+    - url: 'https://3ad91953.ngrok.io/release'
 
 deployment:
   staging:
@@ -11,6 +15,7 @@ deployment:
       - git push origin HEAD:release
       - git push --tags origin
       - git push git@heroku.com:sparks-backend-staging.git $CIRCLE_SHA1:refs/heads/master
+      - "curl -X POST https://sparks-bi.herokuapp.com/release -F 'stage=staging' -F 'name=sparks-backend' -F 'changelog=@./CHANGELOG.md' -F 'branch=release' -F 'tag=$(node -e \"console.log(JSON.parse(fs.readFileSync('package.json')).version)\")'"
 
   production:
     branch: master
