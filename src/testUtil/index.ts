@@ -1,3 +1,5 @@
+import * as Seneca from 'seneca-await'
+
 import {stub} from 'sinon'
 
 export function stubs(...names) {
@@ -10,5 +12,12 @@ export function testAddHandler(t, seneca, callNum, pattern, handler, handlerArgs
 	}
 	t.deepEqual(seneca.add.args[callNum][0], pattern, 'Seneca pattern does not match')
 	t.is(seneca.add.args[callNum][1], handler.returnValues[0], 'Handler function was not added to seneca')
+}
+
+export async function SenecaWithPlugin(plugin, opts) {
+  const seneca = Seneca()
+  seneca.use(plugin, opts)
+  await seneca.ready()
+  return seneca
 }
 
