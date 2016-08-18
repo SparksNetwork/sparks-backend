@@ -247,6 +247,7 @@ function Engagements() {
         subject:'Application accepted for',
         profileKey: engagement.profileKey,
         oppKey: engagement.oppKey,
+        key,
       })
     }
 
