@@ -1,3 +1,16 @@
+<a name="1.0.3"></a>
+## [1.0.3](https://github.com/sdebaun/sparks-backend/compare/v1.0.2...v1.0.3) (2016-08-18)
+
+
+### Bug Fixes
+
+* **Engagements:** Add the engagement key when sending acceptance emails ([79cb13f](https://github.com/sdebaun/sparks-backend/commit/79cb13f))
+* **Engagements:** Add the engagement key when sending confirmation emails ([7ea5668](https://github.com/sdebaun/sparks-backend/commit/7ea5668))
+* **Memberships:** Create from values ([5365ad4](https://github.com/sdebaun/sparks-backend/commit/5365ad4))
+* **Memberships:** Handle missing answers on create ([06e15ee](https://github.com/sdebaun/sparks-backend/commit/06e15ee))
+
+
+
 <a name="1.0.2"></a>
 ## [1.0.2](https://github.com/sdebaun/sparks-backend/compare/v1.0.1...v1.0.2) (2016-08-14)
 
