@@ -267,6 +267,7 @@ function Engagements() {
       templateId: 'b1180393-8841-4cf4-9bbd-4a8602a976ef',
       profileKey: engagement.profileKey,
       oppKey: engagement.oppKey,
+      key,
     })
 
     return {key}
