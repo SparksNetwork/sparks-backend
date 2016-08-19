@@ -38,7 +38,7 @@
   },
   "devDependencies": {
     "blue-tape": "^0.2.0",
-    "commitizen": "^2.8.4",
+    "commitizen": "^2.8.6",
     "conventional-changelog": "^1.1.0",
     "conventional-changelog-cli": "^1.2.0",
     "cz-customizable": "^4.0.0",
