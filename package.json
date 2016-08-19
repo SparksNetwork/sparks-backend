@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sdebaun/sparks-backend.git"
+    "url": "git+https://github.com/SparksNetwork/sparks-backend.git"
   },
   "author": "'sdebaun' <'sdebaun74@gmail.com'>",
   "license": "ISC",
