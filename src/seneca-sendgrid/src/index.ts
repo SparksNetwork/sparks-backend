@@ -63,7 +63,7 @@ test('sendTemplate calls SendGrid.API w properly formed SendGrid.emptyRequest fr
   const seneca = await SenecaWithPlugin(plugin(pargs), popts)
   await seneca.act(margs)
 
-  t.deepEqual(pargs.SendGrid.firstCall.args, [popts.sendgridKey])
+  t.deepEqual(pargs.SendGrid.firstCall.args, [popts.sendgridKey], 'SendGrid not initialized with proper key')
   t.deepEqual(pargs.emptyRequest.firstCall.args, [{
     method: 'POST',
     path: '/v3/mail/send',
@@ -84,11 +84,11 @@ test('sendTemplate calls SendGrid.API w properly formed SendGrid.emptyRequest fr
         email: margs.sender,
       },
     }    
-  }])
-  t.deepEqual(pargs.API.firstCall.args, [pargs.emptyRequest()])
+  }], 'SendGrid request not built with proper args')
+  t.deepEqual(pargs.API.firstCall.args, [pargs.emptyRequest()], 'SendGrid API not called with built request')
 })
 
-export default function plugin({SendGrid}) {
+export function plugin({SendGrid}) {
   return function({sendgridKey}) {
     const seneca = this
 
@@ -110,6 +110,15 @@ function init({seneca, SendGrid, sendgridKey}) {
   }
 }
 
+/**
+ * Send an email built from a specified template ID
+ *
+ * @param {string} args.templateId The ID of the template in SendGrid
+ * @param {string} args.subject The subject line of the email to send
+ * @param {string} args.recipient An address you want to deliver the email to
+ * @param {string} args.sender The email address you want the email to come from
+ * @param {Object} args.substitutions A key-value object, will be passed as substitutions to make to the template in SendGrid.
+ */
 function sendTemplate({seneca}) {
   return async function({templateId, subject, recipient, sender, substitutions}) {
     assert(templateId, 'Must specify templateId to sendTemplate')
