@@ -56,7 +56,8 @@ export function dummyLookups() {
   }
 }
 
-export const lensFields = ({key, profile, project, opp, arrival, ...eng}) => [
+// export const lensFields = ({key, profile, project, opp, arrival, ...eng}) => [
+export const lensFields = ({key, profile, project, opp, ...eng}) => [
   eng.profileKey,
   profile.fullName,
   profile.email,
@@ -68,13 +69,12 @@ export const lensFields = ({key, profile, project, opp, arrival, ...eng}) => [
   project.name,
   eng.oppKey,
   opp.name,
-  arrival ? 'YES' : 'NO',
 ]
 
 const filterOrphans = pipe(filter(has('profileKey')), filter(has('oppKey')))
 
 export async function generateEmailRecords(host) {
-  const {Engagements, Profile, Project, Opp, Arrival} = lookupsFrom(host)
+  const {Engagements, Profile, Project, Opp} = lookupsFrom(host)
   // const {Engagements, Profile, Project, Opp, Arrival} = dummyLookups(host)
 
   async function relativesFor(eng) {
@@ -86,11 +86,11 @@ export async function generateEmailRecords(host) {
       Profile(eng.profileKey),
       Project(opp.projectKey),
     ])
-    const pKPK = `${opp.projectKey}-${eng.profileKey}`
+    // const pKPK = `${opp.projectKey}-${eng.profileKey}`
     // console.log('pKPK', pKPK)
-    const arrival = await Arrival(pKPK)
+    // const arrival = await Arrival(pKPK)
     // console.log('arrival', pKPK, arrival)
-    return {...eng, profile, project, opp, arrival}
+    return {...eng, profile, project, opp}
   }
 
   const rows = pipe(toRows, filterOrphans)(await Engagements())
