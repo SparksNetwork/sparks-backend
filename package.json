@@ -10,7 +10,7 @@
     "heroku-postbuild": "npm run build",
     "build": "tsc",
     "test": "npm run build && node_modules/.bin/tap --cov dist/**/*.test.js src/*.test.js",
-    "tdd": "ava ./dist/**/src --watch",
+    "tdd": "ava ./dist/**/src ./dist/**/**/src/*.test.js --watch",
     "e2e": "ava ./dist/**/e2e --watch",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",
