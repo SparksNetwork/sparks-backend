@@ -7,7 +7,7 @@ async function call(row) {
   const [profileKey, name, email, phone, engKey, status, opp] = row
   console.log('calling', name, phone)
   const response = await twilio.messages.create({
-    body: 'Hi ' + name + '  Grab your shifts for Bhakti Fest West while there are still some left!  Log in to http://sparks.network with a computer.  If you have questions or need to withdraw, email help@sparks.network.',
+    body: 'Hi ' + name + '! Quick! Confirm your volunteer spot for Bhakti Fest, or lose your shifts! Log in to http://sparks.network with a computer. Questions? Need to withdraw? Email help@sparks.network',
     to: phone,
     from: process.env.TWILIO_PHONE_NUMBER,
   })
