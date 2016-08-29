@@ -1,4 +1,5 @@
-import test from 'ava'
+import * as test from 'tape-async'
+// import test from 'ava'
 import * as assert from 'assert'
 import {spy, stub} from 'sinon'
 import {stubs, SenecaWithPlugin} from '../../../testUtil'
@@ -10,7 +11,7 @@ test('Engagement/create', async function(t) {
   t.plan(13)
   // should generate a client token
   seneca.add({role: 'gateway', cmd: 'generateClientToken'}, async function(args) {
-    t.truthy(true)
+    t.ok(true)
     return {clientToken: 'CLIENT_TOKEN'}
   })
   // should push a new engagement to firebase
@@ -74,7 +75,7 @@ test('Engagement/create', async function(t) {
   t.is(key, 'ENGAGEMENT_KEY')
 })
 
-test.only('Engagement/remove', async function(t) {
+test('Engagement/remove', async function(t) {
   const seneca = await SenecaWithPlugin(plugin, {domain: 'http://sparks.network'})
   t.plan(8)
   // should get assignments for the engagement
@@ -99,12 +100,12 @@ test.only('Engagement/remove', async function(t) {
   })
   // should issue a remove for each assignment
   seneca.add({role: 'Firebase', cmd: 'remove', model: 'Assignments'}, async function({key}) {
-    t.truthy(['ASSIGNMENT_KEY_1', 'ASSIGNMENT_KEY_2', 'ASSIGNMENT_KEY_3'].indexOf(key) >= 0)
+    t.ok(['ASSIGNMENT_KEY_1', 'ASSIGNMENT_KEY_2', 'ASSIGNMENT_KEY_3'].indexOf(key) >= 0)
     return {key}
   })
   // should issue a count refresh for each shift affected, but only once
   seneca.add({role: 'Shifts', cmd: 'updateCounts'}, async function({key}) {
-    t.truthy(['SHIFT_KEY_1', 'SHIFT_KEY_2'].indexOf(key) >= 0)
+    t.ok(['SHIFT_KEY_1', 'SHIFT_KEY_2'].indexOf(key) >= 0)
   })
   // should issue a firebase remove for the engagement
   seneca.add({role: 'Firebase', cmd: 'remove', model: 'Engagements'}, async function({key}) {

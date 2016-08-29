@@ -8,10 +8,12 @@
   "scripts": {
     "start": "node dist/index.js",
     "heroku-postbuild": "npm run build",
-    "build": "tsc",
-    "test": "npm run build && node_modules/.bin/tap --cov dist/**/*.test.js src/*.test.js",
-    "tdd": "ava ./dist/**/src ./dist/**/**/src/*.test.js --watch",
-    "e2e": "ava ./dist/**/e2e --watch",
+    "build": "tsc; true",
+    "test": "npm run build; node_modules/.bin/tap --cov dist/**/*.test.js",
+    "xtdd": "ava ./dist/**/src ./dist/**/**/src/*.test.js --watch",
+    "tdd": "watch 'npm run test:unit' src",
+    "test:unit": "npm run build; node_modules/.bin/tap --cov dist/**/src/*.test.js dist/**/**/src/*.test.js; true",
+    "xe2e": "ava ./dist/**/e2e --watch",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",
     "version": "npm run changelog",
@@ -55,7 +57,6 @@
     "validate-commit-msg": "^2.6.1"
   },
   "dependencies": {
-    "ava": "^0.16.0",
     "bluebird": "^3.4.0",
     "braintree": "^1.37.1",
     "braintree-node": "^1.0.9",
