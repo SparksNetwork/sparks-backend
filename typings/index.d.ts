@@ -9,4 +9,5 @@
 /// <reference path="globals/serve-static/index.d.ts" />
 /// <reference path="modules/mime/index.d.ts" />
 /// <reference path="modules/ramda/index.d.ts" />
+/// <reference path="modules/sinon/index.d.ts" />
 /// <reference path="modules/tape/index.d.ts" />
