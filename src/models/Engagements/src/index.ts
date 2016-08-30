@@ -18,12 +18,12 @@ function init({seneca, domain}) {
 
 function create({seneca}) {
   return async function({oppKey, profileKey}) {
-    const {clientToken} = await seneca.act({
-      role:'gateway',
+    const {token} = await seneca.act({
+      role:'braintree',
       cmd:'generateClientToken',
     })
     const {key} = await seneca.act({
-      role: 'Firebase',
+      role: 'firebase',
       cmd: 'push',
       model: 'Engagements',
       values: {
@@ -32,7 +32,7 @@ function create({seneca}) {
         isApplied: true,
         isAccepted: false,
         isConfirmed: false,
-        paymentClientToken: clientToken,        
+        paymentClientToken: token,        
       },
     })
     await seneca.act({
@@ -49,7 +49,7 @@ function create({seneca}) {
 function remove({seneca}) {
   return async function({key}) {
     const {assignments} = await seneca.act({
-      role: 'Firebase',
+      role: 'firebase',
       cmd: 'get',
       assignments: {engagementKey: key},
     })
@@ -58,7 +58,7 @@ function remove({seneca}) {
     const shiftKeys = uniq(assignments.map(prop('shiftKey')))
 
     await Promise.all(assignmentKeys.map(key => seneca.act({
-      role: 'Firebase',
+      role: 'firebase',
       cmd: 'remove',
       model: 'Assignments',
       key,
@@ -69,7 +69,7 @@ function remove({seneca}) {
       key,
     })))
     await seneca.act({
-      role: 'Firebase',
+      role: 'firebase',
       cmd: 'remove',
       model: 'Engagements',
       key,
@@ -82,7 +82,7 @@ function remove({seneca}) {
 function notify({seneca, domain}) {
   return async function({key, templateId, subjectTemplate}) {
     const {engagement, profile, opp, project} = await seneca.act({
-      role: 'Firebase',
+      role: 'firebase',
       cmd: 'get',
       engagement: key,
       profile: ['engagement', 'profileKey'],

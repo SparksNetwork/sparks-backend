@@ -22,29 +22,31 @@ export function plugin({braintree}) {
 
 function init({seneca, braintree, environment, merchantId, publicKey, privateKey}) {
   return function() {
-    const {generateClientToken, createTransaction} =
+    const gateway =
       braintree({environment, merchantId, publicKey, privateKey})
 
-    seneca.add({role: ROLE, cmd: 'generateClientToken'}, _generateClientToken({generateClientToken}))
-    seneca.add({role: ROLE, cmd: 'createTransaction'}, _createTransaction({createTransaction}))
+    seneca.add({role: ROLE, cmd: 'generateClientToken'}, _generateClientToken({gateway}))
+    seneca.add({role: ROLE, cmd: 'createTransaction'}, _createTransaction({gateway}))
   }
 }
 
-function _generateClientToken({generateClientToken}) {
+function _generateClientToken({gateway}) {
   return async function() {
     return {
-      token: generateClientToken()
+      token: gateway.generateClientToken()
     }
   }
 }
 
-function _createTransaction({createTransaction}) {
+function _createTransaction({gateway}) {
   return async function({amount, paymentMethodNonce}) {
     assert(amount, 'must pass amount to createTransaction')
     assert(paymentMethodNonce, 'must pass paymentMethodNonce to createTransaction')
-    return createTransaction({
+    return gateway.createTransaction({
       amount,
       paymentMethodNonce,
+    }, {
+      submitForSettlement: true,
     })
   }
 }

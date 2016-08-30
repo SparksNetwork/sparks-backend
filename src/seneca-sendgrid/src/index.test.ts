@@ -4,7 +4,6 @@ import {stubs, SenecaWithPlugin} from '../../testUtil'
 
 import {omit} from 'ramda'
 import * as assert from 'assert'
-import {AssertionError} from 'assert'
 
 import {plugin} from './index'
 /*

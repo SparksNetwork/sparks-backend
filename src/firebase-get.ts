@@ -39,7 +39,7 @@ export default function firebaseGet() {
     if (not(spec.value)) { return Promise.resolve(null) }
 
     const pattern = applySpec(merge({
-      role: always('Firebase'),
+      role: always('firebase'),
       model:prop('model'),
       }, cmdArgs(spec)
     ))(spec)
@@ -150,6 +150,14 @@ export default function firebaseGet() {
 
     return BPromise.props(promises) as Promise<FulfilledSpec>
   }
+
+  //jeremy will probably kill me for this
+  this.add({role:'firebase',cmd:'get'}, async function(msg):Promise<FulfilledSpec> {
+    if (msg.model) { return await this.prior(msg) }
+
+    const spec = omit(['role','cmd','default$','meta$','tx$'], msg)
+    return await getStuff(spec)
+  })
 
   this.add({role:'Firebase',cmd:'get'}, async function(msg):Promise<FulfilledSpec> {
     if (msg.model) { return await this.prior(msg) }

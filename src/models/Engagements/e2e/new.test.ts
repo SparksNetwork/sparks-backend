@@ -5,27 +5,36 @@ import * as Firebase from 'firebase'
 import * as Seneca from 'seneca-await'
 
 const server = new FirebaseServer(5000, 'localhost.firebaseio.test', {
-  Foo: {
-    bar: '123456',
+  Profiles: {
+    PROFILE1: {
+      fullName: 'Bob Dobbs'
+    }
   },
 })
 
 import Engagements from '../index'
 import sendgrid from '../../../seneca-sendgrid'
+import braintree from '../../../seneca-braintree'
+import firebase from '../../../seneca-firebase'
+import firebaseGet from '../../../firebase-get'
 
-
-'role:Engagements,cmd:create', {
-    oppKey: 'oppOne',
-    profileKey: 'volTwo',
-    uid: 'volTwo',
-  }
-
-test('foo', async function(t) {
+test('Engagements:create', async function(t) {
   const seneca = Seneca()
   seneca.use(Engagements)
   seneca.use(sendgrid, {
     sendgridKey: process.env.SENDGRID_KEY,
   })
+  seneca.use(braintree, {
+    environment: process.env.BT_ENVIRONMENT,
+    merchantId: process.env.BT_MERCHANT_ID,
+    publicKey: process.env.BT_PUBLIC_KEY,
+    privateKey: process.env.BT_PRIVATE_KEY,
+  })
+  seneca.use(firebase, {
+    firebaseHost: 'ws://localhost.firebaseio.test:5000',
+  })
+  seneca.use(firebaseGet)
+
   await seneca.act({
     role: 'Engagements',
     cmd: 'create',
@@ -33,6 +42,7 @@ test('foo', async function(t) {
     profileKey: 'PROFILE1',
     uid: 'UID1',
   })
+  console.log(await server.getValue())
   t.ok(true)
   // const client = new Firebase('ws://localhost.firebaseio.test:5000')
   // const snap = await client.child('Foo').once('value')
