@@ -1,5 +1,4 @@
 import tape from '../test/tape-seneca'
-import {spy} from 'sinon'
 import Shifts from './Shifts'
 
 const test = tape('Shifts', [Shifts])
@@ -25,13 +24,22 @@ test('remove', async function(t) {
 })
 
 test('create', async function(t) {
-  const createSpy = spy()
-  this.add('role:Shifts,cmd:create', createSpy)
-
-  await this.act('role:Shifts,cmd:create', {
+  const {key} = await this.act('role:Shifts,cmd:create', {
     values: {name: 'my shift'},
     profile: {$key: 'profile key'}
   })
 
-  t.ok(spy.calledWith({}))
+  const {shift} = await this.act('role:Firebase,cmd:get', {shift: key})
+
+  t.ok(shift)
+  t.equal(shift.ownerProfileKey, 'profile key')
+  t.equal(shift.name, 'my shift')
+})
+
+test('update', async function(t) {
+  const {key} = await this.act('role:Shifts,cmd:update,key:shiftOne', {values: {}})
+  t.ok(key)
+
+  const {shift} = await this.act('role:Firebase,cmd:get', {shift: key})
+  t.equal(shift.assigned, 0)
 })
