@@ -18,6 +18,7 @@ const collections = [
   'ProjectImages',
   'Profiles',
   'Shifts',
+  'ShiftChanges',
   'Teams',
   'TeamImages',
 ]

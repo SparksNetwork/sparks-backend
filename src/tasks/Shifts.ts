@@ -29,12 +29,40 @@ function Shifts() {
    * Wrap the shifts remove to cascade delete the assignments
    */
   this.wrap('role:Shifts,cmd:remove', async function(msg) {
-    const {key} = msg
-    const {assignments} = await this.act('role:Firebase,cmd:get', {assignments: {shiftKey: key}})
+    const {assignments} = msg
     await Promise.all(
       assignments.map(a => this.act('role:Firebase,cmd:remove,model:Assignments', {key: a.$key}))
     )
     return await this.prior(msg)
+  })
+
+  /*
+   * Create a shift change when removing a shift with assignments
+   */
+  this.wrap('role:Shifts,cmd:remove', async function(msg) {
+    const {uid, shift, assignments} = msg
+    const response = await this.prior(msg)
+
+    if (response.key) {
+      await Promise.all(
+        assignments.map(assignment =>
+          this.act('role:ShiftChanges,cmd:create', {
+            shift, assignment, uid
+          })
+        )
+      )
+    }
+
+    return response
+  })
+
+  /*
+   * Load shift and assignments when removing shift
+   */
+  this.wrap('role:Shifts,cmd:remove', async function(msg) {
+    const {key} = msg
+    const {shift, assignments} = await this.act('role:Firebase,cmd:get', {shift: key, assignments: {shiftKey: key}})
+    return await this.prior(merge(msg, {shift, assignments}))
   })
 }
 

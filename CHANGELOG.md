@@ -1,3 +1,31 @@
+<a name="1.0.16"></a>
+## [1.0.16](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.14...v1.0.16) (2016-08-30)
+
+
+### Features
+
+* **Shifts:** Delete assignments when deleting shifts ([f390057](https://github.com/SparksNetwork/sparks-backend/commit/f390057))
+* **wip:** wip ([42e773d](https://github.com/SparksNetwork/sparks-backend/commit/42e773d))
+* **wip:** wip ([4ba6bdd](https://github.com/SparksNetwork/sparks-backend/commit/4ba6bdd))
+* **wip:** wip ([00ad569](https://github.com/SparksNetwork/sparks-backend/commit/00ad569))
+* **wip:** wip ([4cfca32](https://github.com/SparksNetwork/sparks-backend/commit/4cfca32))
+
+
+
+<a name="1.0.15"></a>
+## [1.0.15](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.14...v1.0.15) (2016-08-30)
+
+
+### Features
+
+* **Shifts:** Delete assignments when deleting shifts ([f390057](https://github.com/SparksNetwork/sparks-backend/commit/f390057))
+* **wip:** wip ([42e773d](https://github.com/SparksNetwork/sparks-backend/commit/42e773d))
+* **wip:** wip ([4ba6bdd](https://github.com/SparksNetwork/sparks-backend/commit/4ba6bdd))
+* **wip:** wip ([00ad569](https://github.com/SparksNetwork/sparks-backend/commit/00ad569))
+* **wip:** wip ([4cfca32](https://github.com/SparksNetwork/sparks-backend/commit/4cfca32))
+
+
+
 <a name="1.0.14"></a>
 ## [1.0.14](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.13...v1.0.14) (2016-08-30)
 

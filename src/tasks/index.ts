@@ -10,6 +10,7 @@ import Profiles from './Profiles'
 import ProjectImages from './ProjectImages'
 import Projects from './Projects'
 import Shifts from './Shifts'
+import ShiftChanges from './ShiftChanges'
 import TeamImages from './TeamImages'
 import Teams from './Teams'
 import Users from './Users'
@@ -28,6 +29,7 @@ export default function(options) {
   seneca.use(Projects, options)
   seneca.use(ProjectImages, options)
   seneca.use(Shifts, options)
+  seneca.use(ShiftChanges, options)
   seneca.use(TeamImages, options)
   seneca.use(Teams, options)
   seneca.use(Users, options)

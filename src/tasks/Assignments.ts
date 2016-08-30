@@ -3,22 +3,20 @@ import defaults from './defaults'
 
 function Assignments() {
   const seneca = this
+  const get = spec => this.act('role:Firebase,cmd:get', spec)
 
   async function updateEngagement(key, by) {
-    const {assignment} = await seneca.act({role:'Firebase',cmd:'get',assignment: key})
-    return await seneca.act({role:'Engagements',cmd:'updateAssignmentCount', key: assignment.engagementKey, by})
+    return await seneca.act({role:'Engagements',cmd:'updateAssignmentCount', key, by})
   }
 
   async function updateAssignmentStatus(engagementKey) {
-    const {engagement, assignments} = await seneca.act('role:Firebase,cmd:get', {
+    const {assignments, commitments} = await get({
       engagement: engagementKey,
       assignments: {engagementKey},
-    })
-    const {commitments} = await seneca.act('role:Firebase,cmd:get', {
-      commitments: {oppKey: engagement.oppKey},
+      commitments: {oppKey: ['engagement', 'oppKey']},
     })
 
-    const shiftCommit = commitments.find(propEq('code', 'shifts'))
+    const shiftCommit = commitments.find(propEq('code', 'shifts')) || {count: 0}
     const requiredAssignments = parseInt(shiftCommit.count, 10) || 0
     const isAssigned = assignments.length >= requiredAssignments
 
@@ -26,43 +24,39 @@ function Assignments() {
       {key: engagementKey, values: {isAssigned}})
   }
 
-  this.add({role:'Assignments',cmd:'create'}, async function({values}) {
-    const {key} = await this.act('role:Firebase,cmd:push,model:Assignments', {values})
-    await this.act('role:Shifts,cmd:updateCounts', {key: values.shiftKey})
-    return {key}
-  })
+  async function updateShiftCounts(key) {
+    return await seneca.act('role:Shifts,cmd:updateCounts', {key})
+  }
 
-  this.add({role:'Assignments',cmd:'remove'}, async function({key}):Promise<TaskResponse> {
-    const {assignment} = await this.act({role:'Firebase',cmd:'get',assignment:key})
-    const {error} = await this.act({role:'Firebase',model:'Assignments',cmd:'remove',key})
-    if (error) { return {error} }
+  this.wrap('role:Assignments,cmd:remove', async function(msg) {
+    const {assignment} = await get({assignment:msg.key})
+    const response = await this.prior(msg)
 
-    if (assignment.shiftKey) {
-      this.act('role:Shifts,cmd:updateCounts', {key: assignment.shiftKey})
+    if (response.key && assignment) {
+      await updateAssignmentStatus(assignment.engagementKey)
+      await updateShiftCounts(assignment.shiftKey)
+      await updateEngagement(assignment.engagementKey, -1)
     }
 
-    updateAssignmentStatus(assignment.engagementKey)
-
-    return {key}
+    return response
   })
 
-  this.add({role:'Assignments',cmd:'update'}, async function({key, values}) {
-    return await this.act('role:Firebase,model:Assignments,cmd:update', {
-      key, values,
-    })
+
+  this.wrap('role:Assignments,cmd:create', async function(msg) {
+    const response = await this.prior(msg)
+    await this.act('role:Shifts,cmd:updateCounts', {key: msg.values.shiftKey})
+    return response
   })
 
-  this.wrap({role:'Assignments',cmd:'remove'}, async function(msg) {
-    updateEngagement(msg.key, -1)
-    return await this.prior(msg)
-  })
-
-  this.wrap({role:'Assignments',cmd:'create'}, async function(msg) {
-    const engagementKey = msg.values.engagementKey
+  /*
+   * Update engagement assignment count
+   */
+  this.wrap('role:Assignments,cmd:create', async function(msg) {
+    const {values: {engagementKey}} = msg
     const response = await this.prior(msg)
 
     if (response.key) {
-      seneca.act({role:'Engagements',cmd:'updateAssignmentCount', key: engagementKey, by: 1})
+      await updateEngagement(engagementKey, 1)
     }
 
     return response
@@ -73,4 +67,4 @@ function Assignments() {
   }
 }
 
-export default defaults(Assignments)
+export default defaults(Assignments, 'create', 'update', 'remove')
