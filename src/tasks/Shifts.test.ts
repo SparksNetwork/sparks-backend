@@ -1,4 +1,5 @@
 import tape from '../test/tape-seneca'
+import {spy, match} from 'sinon'
 import Shifts from './Shifts'
 
 const test = tape('Shifts', [Shifts])
@@ -36,10 +37,12 @@ test('create', async function(t) {
   t.equal(shift.name, 'my shift')
 })
 
-test('update', async function(t) {
-  const {key} = await this.act('role:Shifts,cmd:update,key:shiftOne', {values: {}})
-  t.ok(key)
+test('update updates counts', async function(t) {
+  const updateCountSpy = spy()
+  this.add('role:Shifts,cmd:updateCounts', updateCountSpy)
 
-  const {shift} = await this.act('role:Firebase,cmd:get', {shift: key})
-  t.equal(shift.assigned, 0)
+  const {key} = await this.act('role:Shifts,cmd:update,key:shiftOne', {values: {}})
+
+  t.equals(updateCountSpy.callCount, 1)
+  t.ok(updateCountSpy.calledWithMatch(match({key})))
 })
