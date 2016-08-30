@@ -47,7 +47,7 @@
     "tap": "^7.0.0",
     "tape": "^4.5.1",
     "tape-async": "^2.1.0",
-    "tslint": "^3.14.0",
+    "tslint": "^3.15.0",
     "validate-commit-msg": "^2.7.0"
   },
   "dependencies": {
