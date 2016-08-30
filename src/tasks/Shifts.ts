@@ -36,6 +36,10 @@ function Shifts() {
     )
     return await this.prior(msg)
   })
+
+  this.wrap('role:Shifts', async function(msg) {
+
+  })
 }
 
 export default defaults(Shifts, 'create', 'update', 'remove')
