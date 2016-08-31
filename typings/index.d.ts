@@ -4,6 +4,7 @@
 /// <reference path="globals/express/index.d.ts" />
 /// <reference path="globals/inflection/index.d.ts" />
 /// <reference path="globals/node/index.d.ts" />
+/// <reference path="globals/promptly/index.d.ts" />
 /// <reference path="globals/seneca-await/index.d.ts" />
 /// <reference path="globals/seneca/index.d.ts" />
 /// <reference path="globals/serve-static/index.d.ts" />

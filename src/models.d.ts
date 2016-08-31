@@ -1,5 +1,8 @@
+declare interface Model {
+  $key:string
+}
 
-declare interface Commitment {
+declare interface Commitment extends Model {
   code:string
   oppKey:string
   party:string
@@ -9,7 +12,7 @@ declare interface Commitment {
   ticketType?:string
 }
 
-declare interface Engagement {
+declare interface Engagement extends Model {
   answer:string
   assignmentCount:number
   declined:boolean
@@ -23,4 +26,10 @@ declare interface Engagement {
   paymentError:boolean
   priority:boolean
   profileKey:string
+}
+
+declare interface Profile extends Model {
+  fullName:string
+  email:string
+  uid:string
 }

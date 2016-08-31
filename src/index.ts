@@ -3,6 +3,8 @@ import senecaSn from './seneca-sn'
 import * as Seneca from 'seneca-await'
 import {startDispatch} from './dispatch'
 import cfg from './cfg'
+import braintree from './braintree'
+import email from './email'
 
 const app = express()
 
@@ -21,6 +23,8 @@ const seneca = Seneca({
 
 async function start() {
   seneca.use(senecaSn, {cfg})
+  seneca.use(email)
+  seneca.use(braintree, cfg)
   await seneca.ready()
   const {fb} = await seneca.act({role: 'Firebase'})
   console.log('Starting dispatch')

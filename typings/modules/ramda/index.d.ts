@@ -596,6 +596,7 @@ namespace R {
          * Takes a list and returns a list of lists where each sublist's elements are all "equal" according to the provided equality function
          */
         groupWith<T>(fn: (x: T, y: T) => boolean, list: T[]): T[][]
+        groupWith<T>(fn: (x: T, y: T) => boolean): (list: T[]) => T[][]
         groupWith<T>(fn: (x: T, y: T) => boolean, list: string): string[]
 
         /**
