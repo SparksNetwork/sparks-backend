@@ -24,6 +24,18 @@ function Shifts() {
 
     return {assigned: assignments.length}
   })
+
+  /**
+   * Wrap the shifts remove to cascade delete the assignments
+   */
+  this.wrap('role:Shifts,cmd:remove', async function(msg) {
+    const {key} = msg
+    const {assignments} = await this.act('role:Firebase,cmd:get', {assignments: {shiftKey: key}})
+    await Promise.all(
+      assignments.map(a => this.act('role:Firebase,cmd:remove,model:Assignments', {key: a.$key}))
+    )
+    return await this.prior(msg)
+  })
 }
 
 export default defaults(Shifts, 'create', 'update', 'remove')
