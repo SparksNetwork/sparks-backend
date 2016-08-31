@@ -154,7 +154,7 @@ export default function firebaseGet() {
   this.add({role:'Firebase',cmd:'get'}, async function(msg):Promise<FulfilledSpec> {
     if (msg.model) { return await this.prior(msg) }
 
-    const spec = omit(['role','cmd','default$','meta$','tx$'], msg)
+    const spec = omit(['role','cmd','default$','meta$','tx$','ungate$','plugin$','fatal$'], msg)
     return await getStuff(spec)
   })
 

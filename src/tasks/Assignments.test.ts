@@ -1,5 +1,5 @@
 import tape from '../test/tape-seneca'
-import {spy} from 'sinon'
+import {spy, match} from 'sinon'
 import Assignments from './Assignments'
 
 function mockShifts() {
@@ -10,6 +10,8 @@ function mockShifts() {
   this.add('role:Engagements,cmd:updateAssignmentCount', async function() {
     return {}
   })
+
+  this.add('role:ShiftChanges,cmd:create', async () => ({}))
 }
 
 const test = tape('Assignments', [mockShifts, Assignments])
@@ -56,4 +58,19 @@ test('shift changes', async function(t) {
   await this.act('role:Assignments,cmd:remove', {uid, key})
 
   t.equals(shiftChangeSpy.callCount, 3)
+
+  const [args1, args2, args3] = shiftChangeSpy.getCalls().map(call => call.args[0])
+
+  t.equals(args1.assignment.shiftKey, 'shiftOne', 'Sets assignment')
+  t.equals(args1.shift.$key, 'shiftOne', 'Sets shift')
+  t.equals(args1.action, 'create', 'Sets action')
+  t.equals(args1.uid, uid, 'Sets uid')
+
+  t.equals(args2.assignment.shiftKey, 'shiftTwo', 'Sets update assignment')
+  t.equals(args2.shift.$key, 'shiftTwo', 'Sets update shift')
+  t.equals(args2.action, 'update', 'Sets action')
+
+  t.equals(args3.assignment.shiftKey, 'shiftTwo', 'Sets remove assignment')
+  t.equals(args3.shift.$key, 'shiftTwo', 'Sets remove shift')
+  t.equals(args3.action, 'remove', 'Sets action')
 })

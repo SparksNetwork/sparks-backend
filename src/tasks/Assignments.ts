@@ -1,4 +1,4 @@
-import {propEq} from 'ramda'
+import {propEq, merge} from 'ramda'
 import defaults from './defaults'
 
 function Assignments() {
@@ -28,8 +28,30 @@ function Assignments() {
     return await seneca.act('role:Shifts,cmd:updateCounts', {key})
   }
 
+  async function createShiftChange(msg, response) {
+    const {uid} = msg
+    let assignment, shift
+
+    if (msg.cmd === 'remove') {
+      ({assignment} = msg);
+      ({shift} = assignment && await get({shift: assignment.shiftKey}));
+    } else {
+      ({assignment, shift} = await get({
+        assignment: response.key,
+        shift: ['assignment', 'shiftKey']
+      }))
+    }
+
+    await seneca.act('role:ShiftChanges,cmd:create', {
+      action: msg.cmd,
+      assignment,
+      shift,
+      uid,
+    })
+  }
+
   this.wrap('role:Assignments,cmd:remove', async function(msg) {
-    const {assignment} = await get({assignment:msg.key})
+    const {assignment} = msg
     const response = await this.prior(msg)
 
     if (response.key && assignment) {
@@ -40,7 +62,6 @@ function Assignments() {
 
     return response
   })
-
 
   this.wrap('role:Assignments,cmd:create', async function(msg) {
     const response = await this.prior(msg)
@@ -57,6 +78,17 @@ function Assignments() {
 
     if (response.key) {
       await updateEngagement(engagementKey, 1)
+    }
+
+    return response
+  })
+
+  this.wrap('role:Assignments,cmd:*', async function(msg) {
+    const nextMsg = msg.key ? merge(msg, await get({assignment: msg.key})) : msg
+    const response = await this.prior(nextMsg)
+
+    if (response.key) {
+      await createShiftChange(nextMsg, response)
     }
 
     return response
