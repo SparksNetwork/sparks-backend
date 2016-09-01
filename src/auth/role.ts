@@ -389,7 +389,7 @@ export default function() {
 
     assert(profile, 'Profile not found')
     assert(oldProfileKey, 'Old user not found')
-    assert(!newProfileKey, 'New user found')
+    assert(!newProfileKey, 'New user not found')
     assert(profile.$key === oldProfileKey, 'Incorrect profile')
 
     return {}
