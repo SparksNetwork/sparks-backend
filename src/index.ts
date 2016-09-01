@@ -3,6 +3,8 @@ import senecaSn from './seneca-sn'
 import * as Seneca from 'seneca-await'
 import {startDispatch} from './dispatch'
 import cfg from './cfg'
+import {firebase} from './process-firebase'
+import {startMetrics} from './metrics'
 
 const app = express()
 
@@ -20,11 +22,16 @@ const seneca = Seneca({
 })
 
 async function start() {
+  const fb = await firebase()
+
   seneca.use(senecaSn, {cfg})
   await seneca.ready()
-  const {fb} = await seneca.act({role: 'Firebase'})
+
   console.log('Starting dispatch')
   startDispatch(fb.child('!queue'), seneca)
+
+  console.log('Starting metrics')
+  startMetrics(fb.child('!queue').child('metrics'), fb.child('metrics'))
 }
 
 start()

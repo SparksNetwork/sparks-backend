@@ -124,6 +124,15 @@ function createHandler(seneca) {
   }
 }
 
+function createRecorder(ref:Firebase, tag:string) {
+  return async function record(data) {
+    const timestamp = Date.now()
+    const values = {timestamp, tag}
+    await ref.push(values)
+    return data
+  }
+}
+
 /**
  * Generate a function that generates an async function that writes the payload
  * response data back into firebase.
@@ -136,7 +145,7 @@ function createResponder(ref:Firebase) {
   return function respond({domain, action, uid}) {
     return async function(response:SenecaResponse):Promise<SenecaResponse> {
       log('responding with', response)
-      await ref.child('responses').child(uid).push(buildResponse(domain, action, objectOrKey(response)))
+      await ref.child(uid).push(buildResponse(domain, action, objectOrKey(response)))
       return response
     }
   }
@@ -146,18 +155,45 @@ function createResponder(ref:Firebase) {
 * Process the firebase queue and turn messages there into seneca tasks.
 */
 export function startDispatch(ref:Firebase, seneca) {
+  const responsesRef = ref.child('responses')
+  const metricsRef = ref.child('metrics')
+
   const handle = createHandler(seneca)
-  const responder = createResponder(ref)
+  const responder = createResponder(responsesRef)
+  const recordIncoming = createRecorder(metricsRef, 'queue-incoming')
+  const recordResponse = createRecorder(metricsRef, 'queue-response')
+  const recordError = createRecorder(metricsRef, 'queue-error')
 
   return new FirebaseQueue(ref, function(data, progress, resolve, reject) {
-    handle(data)
+    recordIncoming(data)
+      .then(handle)
       .then(responder(data))
+      .then(recordResponse)
       .then(resolve)
-      .catch(reject)
+      .catch(error =>
+        recordError({error: error.toString()})
+          .then(() => reject(error)))
   })
 }
 
 export function runTests() {
+  test('createRecorder', async function(t) {
+    const data = {some: 'data'}
+    const timestamp = Date.now()
+    const ref = {} as Firebase
+    const pushSpy = spy()
+    ref.push = pushSpy
+    const recorder = createRecorder(ref, 'my tag')
+
+    const response = await recorder(data)
+    const pushArgs = pushSpy.getCall(0).args[0]
+
+    t.equals(response, data)
+    t.equals(pushSpy.callCount, 1)
+    t.equals(pushArgs.tag, 'my tag')
+    t.ok(pushArgs.timestamp >= timestamp)
+  })
+
   test('createHandler', async function (t) {
     const data = {
       domain: 'test', action: 'createHandlerTest', uid: 'abc123',
@@ -203,9 +239,8 @@ export function runTests() {
     const response = await respond({some: 'data'})
 
     t.ok(response)
-    t.equals(childSpy.callCount, 2)
-    t.deepEquals(childSpy.getCall(0).args, ['responses'])
-    t.deepEquals(childSpy.getCall(1).args, ['abc123'])
+    t.equals(childSpy.callCount, 1)
+    t.deepEquals(childSpy.getCall(0).args, ['abc123'])
     t.equals(pushSpy.callCount, 1)
     t.deepEquals(pushSpy.getCall(0).args, [{
       domain: 'test',

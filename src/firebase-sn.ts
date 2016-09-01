@@ -1,4 +1,4 @@
-import * as Firebase from 'firebase'
+import {firebase} from './process-firebase'
 import {makeCollections} from './collections'
 import {keys} from 'ramda'
 
@@ -22,66 +22,66 @@ export function Model(model:string) {
   }
 }
 
-export default function({collections, cfg: {FIREBASE_HOST, FIREBASE_TOKEN}}) {
-  const fb = new Firebase(FIREBASE_HOST)
-  console.log('Connected firebase to', FIREBASE_HOST)
+function modelPlugin({models, name}) {
+  const model = models[name]
 
-  const models = makeCollections(fb, collections)
-  models.Users = {
-    set: (uid, profileKey) => fb.child('Users').child(uid).set(profileKey),
-    get: uid => fb.child('Users').child(uid).once('value').then(s => s.val()),
-  }
-
-  this.add({role:'Firebase'}, function(msg, respond) {
-    respond(null, {fb})
+  this.add({role:'Firebase',model:name,cmd:'get'}, async function({key}) {
+    return await model.get(key)
   })
 
-  this.add({role:'Firebase',cmd:'Models'}, function(msg, respond) {
-    respond(null, {models})
+  this.add({role:'Firebase',model:name,cmd:'first'}, async function({by, value}) {
+    return await model.first(by, value)
   })
 
-  this.add({role:'Firebase',cmd:'Model'}, function(msg, respond) {
-    respond(null, {model: models[msg.model]})
+  this.add({role:'Firebase',model:name,cmd:'by'}, async function({by, value}) {
+    return await model.by(by, value)
   })
 
-  const names = keys(models)
-  for (let name of names) {
-    const model = models[name]
-    this.add({role:'Firebase',model:name,cmd:'get'}, function({key}, respond) {
-      model.get(key).then(result => respond(null, result))
-    })
+  this.add({role:'Firebase',model:name,cmd:'update'}, async function({key, values}):Promise<SenecaResponse> {
+    try {
+      await model.child(key).update(values)
+      return {key}
+    } catch (error) {
+      return {error}
+    }
+  })
 
-    this.add({role:'Firebase',model:name,cmd:'first'}, function({by, value}, respond) {
-      model.first(by, value).then(result => respond(null, result))
-    })
+  this.add({role:'Firebase',model:name,cmd:'push'}, async function({values}) {
+    const key = model.push(values).key()
+    return {key}
+  })
 
-    this.add({role:'Firebase',model:name,cmd:'by'}, function({by, value}, respond) {
-      model.by(by, value).then(result => respond(null, result))
-    })
+  this.add({role:'Firebase',model:name,cmd:'set'}, async function({key, values}) {
+    await model.child(key).set(values)
+    return {key}
+  })
 
-    this.add({role:'Firebase',model:name,cmd:'update'}, function({key, values}, respond) {
-      model.child(key).update(values)
-        .then(() => respond(null, {key}))
-        .catch(error => respond(null, {error}))
-    })
+  this.add({role:'Firebase',model:name,cmd:'remove'}, async function({key}):Promise<SenecaResponse> {
+    if (!key) { return {error: 'no key'} }
+    await model.child(key).remove()
+    return {key}
+  })
 
-    this.add({role:'Firebase',model:name,cmd:'push'}, function({values}, respond) {
-      const key = model.push(values).key()
-      respond(null, {key})
-    })
+  return `${name}-model`
+}
 
-    this.add({role:'Firebase',model:name,cmd:'set'}, function({key, values}, respond) {
-      model.child(key).set(values)
-        .then(() => respond(null, {key}))
-        .catch(err => respond(err))
-    })
 
-    this.add({role:'Firebase',model:name,cmd:'remove'}, function({key}, respond) {
-      if (!key) { respond(null, {error: 'no key'}) }
-      model.child(key).remove()
-        .then(() => respond(null, {key}))
-    })
-  }
+export default function({collections}) {
+  let fb:Firebase
+  let models
+
+  this.add({role:'Firebase'}, async function() {
+    return {fb}
+  })
+
+  this.add({role:'Firebase',cmd:'Models'}, async function() {
+    return {models}
+  })
+
+  this.add({role:'Firebase',cmd:'Model'}, function({model}) {
+    return {model: models[model]}
+  })
+
   this.add({role:'Firebase',model:'Users',cmd:'set'}, async function({uid, profileKey}) {
     return await models.Users.set(uid, profileKey)
   })
@@ -95,12 +95,20 @@ export default function({collections, cfg: {FIREBASE_HOST, FIREBASE_TOKEN}}) {
     return {profileKey}
   })
 
-  this.add({init:'firebase-sn'}, function(args, respond) {
-    console.log('Authenticating firebase')
-    fb.authWithCustomToken(FIREBASE_TOKEN.trim(), err => {
-      console.log('Authenticated firebase')
-      respond(err, {})
-    })
+  this.add({init:'firebase-sn'}, async function() {
+    fb = await firebase()
+    models = makeCollections(fb, collections)
+    models.Users = {
+      set: (uid, profileKey) => fb.child('Users').child(uid).set(profileKey),
+      get: uid => fb.child('Users').child(uid).once('value').then(s => s.val()),
+    }
+
+    const names = keys(models)
+    for (let name of names) {
+      this.use(modelPlugin, {models, name})
+    }
+
+    return {}
   })
 
   return 'firebase-sn'
