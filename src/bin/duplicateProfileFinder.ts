@@ -1,6 +1,6 @@
 import load from '../load'
-import {groupWith, eqProps, compose, filter} from 'ramda'
-import {objToRows} from "../collections";
+import {values, test} from 'ramda'
+import {objToRows} from '../collections';
 import * as promptly from 'promptly'
 
 type ProfileArray = Array<Profile>
@@ -15,10 +15,22 @@ async function findDuplicates() {
   const profiles:ProfileArray = objToRows((await fb.child('Profiles').once('value')).val()) as ProfileArray
   console.log(profiles.length)
 
-  const matchDuplicates:(ProfileArray) => ProfileArrays = compose<ProfileArray, ProfileArrays, ProfileArrays>(
-    filter<ProfileArray>(profiles => profiles.length > 1),
-    groupWith<Profile>(eqProps('email'))
-  )
+  const matchDuplicates:(ProfileArray) => ProfileArrays = profiles => {
+    const emails = {}
+
+    for (let profile of profiles) {
+      const ary = emails[profile.email] || []
+      ary.push(profile)
+      emails[profile.email] = ary.sort((a,b) => {
+        if (test(/[\-:]/, a.uid)) {
+          return 1
+        }
+        return -1
+      })
+    }
+
+    return values<ProfileArray>(emails).filter(profiles => profiles.length > 1)
+  }
 
   const duplicateProfiles:ProfileArrays = matchDuplicates(profiles)
   console.log('='.repeat(30))
@@ -26,20 +38,13 @@ async function findDuplicates() {
 
   for (let profiles of duplicateProfiles) {
     console.log(profiles[0].email, 'has', profiles.length, 'profiles')
-
-    const key = profiles[0].$key
-
-    for (let profile of profiles.slice(1)) {
-      console.log('  Point uid', profile.uid, 'to profile key', key)
-    }
   }
 
   const answer = await promptly.confirm('Continue?')
-  if (!answer) { process.exit(); return }
+  if (!answer) { return }
 
   for (let profiles of duplicateProfiles) {
-    process.stdout.write(profiles[0].email)
-    process.stdout.write("\t\t")
+    console.log(profiles[0].email, profiles[0].uid)
 
     const key = profiles[0].$key
 
@@ -52,21 +57,36 @@ async function findDuplicates() {
         organizers: {profileKey: profile.$key},
       })
 
-      console.log('Profile', profile.email)
-      console.log(`  ${engagements.length} engagements`)
-      console.log(`  ${arrivals.length} arrivals`)
-      console.log(`  ${assignments.length} assignments`)
-      console.log(`  ${fulfillers.length} fulfillers`)
-      console.log(`  ${organizers.length} organizers`)
+      console.log(`  ${profile.uid}`)
+      console.log(`    ${engagements.length} engagements`)
+      console.log(`    ${arrivals.length} arrivals`)
+      console.log(`    ${assignments.length} assignments`)
+      console.log(`    ${fulfillers.length} fulfillers`)
+      console.log(`    ${organizers.length} organizers`)
 
       for (let engagement of engagements) {
         await fb.child('Engagements').child(engagement.$key).child('profileKey').set(key)
       }
 
-      await fb.child('Users').child(profile.uid).set(key)
-    }
+      for (let arrival of arrivals) {
+        await fb.child('Arrivals').child(arrival.$key).child('profileKey').set(key)
+      }
 
-    process.stdout.write(" done\n")
+      for (let assignment of assignments) {
+        await fb.child('Assignments').child(assignment.$key).child('profileKey').set(key)
+      }
+
+      for (let fulfiller of fulfillers) {
+        await fb.child('Fulfillers').child(fulfiller.$key).child('authorProfileKey').set(key)
+      }
+
+      for (let organizer of organizers) {
+        await fb.child('Organizers').child(organizer.$key).child('profileKey').set(key)
+      }
+
+      await fb.child('Users').child(profile.uid).set(key)
+      await fb.child('Profiles').child(profile.$key).child('duplicate').set(true)
+    }
   }
 }
 

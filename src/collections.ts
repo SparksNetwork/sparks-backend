@@ -6,7 +6,7 @@ export function objToRows(obj) {
 
 export function byChildKey<T>(root:Firebase):(field:string, key:any) => Promise<Array<T>> {
   return function(field:string, key:any) {
-    console.log('Looking up', field, 'of', key)
+    // console.log('Looking up', field, 'of', key)
     return root.orderByChild(field).equalTo(key).once('value')
       .then(snap => objToRows(snap.val()))
   }
@@ -19,7 +19,7 @@ const firstByChildKey = function(root) {
 }
 
 const byKey = root => key => {
-  console.log(`Looking up ${root.key()} ${key}`)
+  // console.log(`Looking up ${root.key()} ${key}`)
   return root.child(key).once('value')
     .then(snap => merge(snap.val(), {$key: key}))
 }
