@@ -1,3 +1,13 @@
+<a name="1.0.17"></a>
+## [1.0.17](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.16...v1.0.17) (2016-09-03)
+
+
+### Features
+
+* **CI:** Read the version from the package.json file with jq ([64efe7b](https://github.com/SparksNetwork/sparks-backend/commit/64efe7b))
+
+
+
 <a name="1.0.16"></a>
 ## [1.0.16](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.15...v1.0.16) (2016-09-03)
 
