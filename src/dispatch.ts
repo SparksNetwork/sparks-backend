@@ -4,6 +4,7 @@ import {when, compose, equals, keys, prop, merge, type} from 'ramda'
 
 import * as test from 'tape-async'
 import {spy} from 'sinon'
+import {pushMetric} from './metrics';
 
 const log = console.log.bind(console)
 
@@ -125,10 +126,8 @@ function createHandler(seneca) {
 }
 
 function createRecorder(ref:Firebase, tag:string) {
-  return async function record(data) {
-    const timestamp = Date.now()
-    const values = {timestamp, tag}
-    await ref.push(values)
+  return function record(data) {
+    pushMetric(ref, tag)
     return data
   }
 }
