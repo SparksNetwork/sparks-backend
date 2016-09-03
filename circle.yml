@@ -25,7 +25,7 @@ deployment:
         -F 'name=sparks-backend' \
         -F 'changelog=@./CHANGELOG.md' \
         -F 'branch=release' \
-        -F 'tag=$(jq -r ".version" package.json)'
+        -F 'version=$(jq -r ".version" package.json)'
 
   production:
     branch: master
@@ -38,4 +38,4 @@ deployment:
         -F 'name=sparks-backend' \
         -F 'changelog=@./CHANGELOG.md' \
         -F 'branch=master' \
-        -F 'tag=$(jq -r ".version" package.json)'
+        -F 'version=$(jq -r ".version" package.json)'
