@@ -48,7 +48,7 @@
     "tape": "^4.5.1",
     "tape-async": "^2.1.0",
     "tslint": "^3.15.1",
-    "validate-commit-msg": "^2.7.0"
+    "validate-commit-msg": "^2.8.0"
   },
   "dependencies": {
     "bluebird": "^3.4.6",
