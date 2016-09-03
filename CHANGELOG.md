@@ -1,3 +1,13 @@
+<a name="1.0.18"></a>
+## [1.0.18](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.17...v1.0.18) (2016-09-03)
+
+
+### Bug Fixes
+
+* **CI:** submit version param to sparks-bi instead of tag ([3ed7ed1](https://github.com/SparksNetwork/sparks-backend/commit/3ed7ed1))
+
+
+
 <a name="1.0.17"></a>
 ## [1.0.17](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.16...v1.0.17) (2016-09-03)
 
