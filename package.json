@@ -51,7 +51,7 @@
     "validate-commit-msg": "^2.7.0"
   },
   "dependencies": {
-    "bluebird": "^3.4.3",
+    "bluebird": "^3.4.4",
     "braintree": "^1.37.1",
     "braintree-node": "^1.0.9",
     "express": "^4.13.4",
