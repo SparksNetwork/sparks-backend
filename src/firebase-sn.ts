@@ -1,6 +1,6 @@
-import {firebase} from './process-firebase'
-import {makeCollections} from './collections'
-import {keys} from 'ramda'
+import {
+  byKey, firstByChildKey, byChildKey
+} from './collections'
 
 interface FirebaseValue {
   [propName:string]:FirebaseValue | string | boolean | number
@@ -22,68 +22,47 @@ export function Model(model:string) {
   }
 }
 
-function modelPlugin({models, name}) {
-  const model = models[name]
-
-  this.add({role:'Firebase',model:name,cmd:'get'}, async function({key}) {
-    return await model.get(key)
+export default function(fb) {
+  this.add({role:'Firebase'}, function(msg, respond) {
+    respond(null, {fb})
   })
 
-  this.add({role:'Firebase',model:name,cmd:'first'}, async function({by, value}) {
-    return await model.first(by, value)
+  this.add({role:'Firebase',cmd:'get'}, async function({model, key}) {
+    return await byKey(fb.child(model))(key)
   })
 
-  this.add({role:'Firebase',model:name,cmd:'by'}, async function({by, value}) {
-    return await model.by(by, value)
+  this.add({role:'Firebase',cmd:'first'}, async function({model, by, value}) {
+    return await firstByChildKey(fb.child(model))(by, value)
   })
 
-  this.add({role:'Firebase',model:name,cmd:'update'}, async function({key, values}):Promise<SenecaResponse> {
-    try {
-      await model.child(key).update(values)
-      return {key}
-    } catch (error) {
-      return {error}
-    }
+  this.add({role:'Firebase',cmd:'by'}, async function({model, by, value}) {
+    return await byChildKey(fb.child(model))(by, value)
   })
 
-  this.add({role:'Firebase',model:name,cmd:'push'}, async function({values}) {
-    const key = model.push(values).key()
+  this.add({role:'Firebase',cmd:'update'}, async function({model, key, values}) {
+    return await fb.child(model).child(key).update(values)
+      .then(() => ({key}))
+      .catch(error => ({error}))
+  })
+
+  this.add({role:'Firebase',cmd:'push'}, async function({model, values}) {
+    const key = fb.child(model).push(values).key()
     return {key}
   })
 
-  this.add({role:'Firebase',model:name,cmd:'set'}, async function({key, values}) {
-    await model.child(key).set(values)
-    return {key}
+  this.add({role:'Firebase',cmd:'set'}, async function({model, key, values}) {
+    return await fb.child(model).child(key).set(values)
+      .then(() => ({key}))
+      .catch(error => ({error}))
   })
 
-  this.add({role:'Firebase',model:name,cmd:'remove'}, async function({key}):Promise<SenecaResponse> {
+  this.add({role:'Firebase',cmd:'remove'}, async function({model, key}) {
     if (!key) { return {error: 'no key'} }
-    await model.child(key).remove()
-    return {key}
-  })
-
-  return `${name}-model`
-}
-
-
-export default function({collections}) {
-  let fb:Firebase
-  let models
-
-  this.add({role:'Firebase'}, async function() {
-    return {fb}
-  })
-
-  this.add({role:'Firebase',cmd:'Models'}, async function() {
-    return {models}
-  })
-
-  this.add({role:'Firebase',cmd:'Model'}, function({model}) {
-    return {model: models[model]}
+    return await fb.child(model).child(key).remove()
   })
 
   this.add({role:'Firebase',model:'Users',cmd:'set'}, async function({uid, profileKey}) {
-    return await models.Users.set(uid, profileKey)
+    return await fb.child('Users').child(uid).set(profileKey)
   })
 
   /**
@@ -91,24 +70,11 @@ export default function({collections}) {
   * string pairs and seneca does not like returning primitive types
   */
   this.add({role:'Firebase',model:'Users',cmd:'get'}, async function({uid}) {
-    const profileKey = await models.Users.get(uid)
+    const profileKey = await fb.child('Users').child(uid)
+      .once('value')
+      .then(s => s.val())
+
     return {profileKey}
-  })
-
-  this.add({init:'firebase-sn'}, async function() {
-    fb = await firebase()
-    models = makeCollections(fb, collections)
-    models.Users = {
-      set: (uid, profileKey) => fb.child('Users').child(uid).set(profileKey),
-      get: uid => fb.child('Users').child(uid).once('value').then(s => s.val()),
-    }
-
-    const names = keys(models)
-    for (let name of names) {
-      this.use(modelPlugin, {models, name})
-    }
-
-    return {}
   })
 
   return 'firebase-sn'
