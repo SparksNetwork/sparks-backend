@@ -6,6 +6,7 @@ import senecaSn from './seneca-sn'
 import cfg from './cfg'
 import {startDispatch} from './dispatch'
 import {startMetrics} from './metrics'
+import {startPing} from "./ping";
 
 const app = express()
 
@@ -30,10 +31,13 @@ async function start() {
   await seneca.ready()
 
   console.log('Starting dispatch')
-  startDispatch(fb.child('!queue'), seneca)
+  const queue = startDispatch(fb.child('!queue'), seneca)
 
   console.log('Starting metrics')
   startMetrics(fb.child('!queue').child('metrics'), fb.child('metrics'))
+
+  console.log('Starting pingpong')
+  startPing(fb.child('!queue'))
 }
 
 start()

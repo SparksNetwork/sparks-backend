@@ -1,10 +1,10 @@
 /// <reference path="./firebase-queue.d.ts" />
 import * as FirebaseQueue from 'firebase-queue'
-import {when, compose, equals, keys, prop, merge, type} from 'ramda'
+import {when, compose, equals, keys, prop, merge, type, identity} from 'ramda'
 
 import * as test from 'tape-async'
 import {spy} from 'sinon'
-import {pushMetric} from './metrics';
+import {pushMetric} from './metrics'
 
 const log = console.log.bind(console)
 
@@ -126,7 +126,7 @@ function createHandler(seneca) {
 }
 
 function createRecorder(ref:Firebase, tag:string) {
-  return function record(data) {
+  return async function record(data) {
     pushMetric(ref, tag)
     return data
   }
@@ -141,10 +141,11 @@ function createRecorder(ref:Firebase, tag:string) {
  *   (response:SenecaResponse)=>Promise<SenecaResponse>}
  */
 function createResponder(ref:Firebase) {
-  return function respond({domain, action, uid}) {
-    return async function(response:SenecaResponse):Promise<SenecaResponse> {
-      log('responding with', response)
-      await ref.child(uid).push(buildResponse(domain, action, objectOrKey(response)))
+  return function(data) {
+    return async function (response: SenecaResponse): Promise<SenecaResponse> {
+      const {_id, domain, action, uid} = data
+      const responsePayload = buildResponse(domain, action, objectOrKey(response))
+      await ref.child(uid).child(_id).set(responsePayload)
       return response
     }
   }
@@ -163,14 +164,16 @@ export function startDispatch(ref:Firebase, seneca) {
   const recordResponse = createRecorder(metricsRef, 'queue-response')
   const recordError = createRecorder(metricsRef, 'queue-error')
 
-  return new FirebaseQueue(ref, function(data, progress, resolve, reject) {
+  return new FirebaseQueue(ref, {sanitize: false}, function(data, progress, resolve, reject) {
     recordIncoming(data)
+      .catch(identity)
       .then(handle)
       .then(responder(data))
       .then(recordResponse)
       .then(resolve)
       .catch(error =>
         recordError({error: error.toString()})
+          .then(err => console.error(err) || err)
           .then(() => reject(error)))
   })
 }
@@ -223,14 +226,14 @@ export function runTests() {
   })
 
   test('createResponder', async function (t) {
-    const data = {domain: 'test', action: 'createResponderTest', uid: 'abc123'}
+    const data = {domain: 'test', action: 'createResponderTest', uid: 'abc123', _id: '123abc'}
     const ref = {} as Firebase
 
     const childSpy = spy(() => ref)
-    const pushSpy = spy()
+    const setSpy = spy()
 
     ref.child = childSpy
-    ref.push = pushSpy
+    ref.set = setSpy
 
     const responder = createResponder(ref)
     const respond = responder(data)
@@ -238,10 +241,11 @@ export function runTests() {
     const response = await respond({some: 'data'})
 
     t.ok(response)
-    t.equals(childSpy.callCount, 1)
+    t.equals(childSpy.callCount, 2)
     t.deepEquals(childSpy.getCall(0).args, ['abc123'])
-    t.equals(pushSpy.callCount, 1)
-    t.deepEquals(pushSpy.getCall(0).args, [{
+    t.deepEquals(childSpy.getCall(1).args, ['123abc'])
+    t.equals(setSpy.callCount, 1)
+    t.deepEquals(setSpy.getCall(0).args, [{
       domain: 'test',
       event: 'createResponderTest',
       payload: {some: 'data'}
