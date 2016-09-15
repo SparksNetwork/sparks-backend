@@ -51,16 +51,15 @@ test('create', async function(t) {
   t.ok(eng, 'created')
   t.equal(eng.oppKey, 'oppOne', 'oppKey')
   t.equal(eng.profileKey, 'volTwo', 'profileKey')
-  t.ok(eng.isApplied, 'isApplied')
   t.equal(eng.isAccepted, false, 'isAccepted is false')
   t.equal(eng.isConfirmed, false, 'isConfirmed is false')
   t.equal(eng.paymentClientToken, 'paymenowyoubastard', 'generated payment client token')
 
-  t.equal(emailsSent.length, 1)
-  const email = emailsSent[0] as any
-  t.equal(email.subject, 'New Engagement for')
-  t.equal(email.profileKey, 'volTwo')
-  t.equal(email.oppKey, 'oppOne')
+  // t.equal(emailsSent.length, 1)
+  // const email = emailsSent[0] as any
+  // t.equal(email.subject, 'New Engagement for')
+  // t.equal(email.profileKey, 'volTwo')
+  // t.equal(email.oppKey, 'oppOne')
 })
 
 test('remove', async function(t) {
