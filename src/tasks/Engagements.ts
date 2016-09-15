@@ -71,17 +71,10 @@ function Engagements() {
     const {key} = await Engagements.push({
       oppKey,
       profileKey,
-      isApplied: true,
+      isApplied: false,
       isAccepted: false,
       isConfirmed: false,
       paymentClientToken: clientToken,
-    })
-
-    await this.act('role:email,cmd:send,email:engagement', {
-      templateId: '96e36ab7-43b0-4d45-8309-32c52530bd8a',
-      subject:'New Engagement for',
-      profileKey,
-      oppKey,
     })
 
     return {key}
@@ -136,8 +129,8 @@ function Engagements() {
 
   this.add({role:'Engagements',cmd:'update'}, async function({key, values, userRole}) {
     const allowedFields = {
-      volunteer: ['answer', 'isAssigned'],
-      project: ['answer', 'isAssigned', 'isAccepted', 'priority', 'declined'],
+      volunteer: ['answer', 'isAssigned', 'isApplied'],
+      project: ['answer', 'isAssigned', 'isAccepted', 'isApplied', 'priority', 'declined'],
     }[userRole] || []
 
     await Engagements.update(key, pick<any, any>(allowedFields, values))
@@ -149,6 +142,15 @@ function Engagements() {
 
     if (values.isAccepted) {
       await this.act('role:Engagements,cmd:sendEmail,email:accepted', {key})
+    }
+
+    if (values.isApplied) {
+      await this.act('role:email,cmd:send,email:engagement', {
+        templateId: '96e36ab7-43b0-4d45-8309-32c52530bd8a',
+        subject:'You\'ve Applied to',
+        profileKey: engagement.profileKey,
+        oppKey: engagement.oppKey,
+      })
     }
 
     const {isAssigned, isPaid} = engagement
