@@ -21,7 +21,57 @@ Any *.local.* files will be ignored, use that to safely name developer shortcuts
 
 ### Development Instances
 
-Just set up a new firebase instance, and get the FIREBASE_HOST and FIREBASE_TOKEN that you need to connect to it.
+Install firebase tools:
+
+```
+npm i -g firebase-tools
+firebase login
+```
+
+Now set up the local project:
+
+```
+firebase list
+firebase use my-firebase-name
+```
+
+Then deploy the rules:
+
+```
+firebase deploy
+```
+
+You'll need to visit your firebase instance and get a legacy auth token for the backend:
+
+```
+https://console.firebase.google.com/project/my-firebase-name/settings/database
+```
+
+Now set FIREBASE_HOST and FIREBASE_TOKEN in .env:
+
+```
+FIREBASE_HOST=https://my-database-name.firebaseio.com
+FIREBASE_TOKEN=token-from-firebase
+POST=8081
+DOMAIN=http://sparks.dev
+BT_ENVIRONMENT=Sandbox
+BT_MERCHANT_ID=abc123
+BT_PRIVATE_KEY=abc123
+BT_PUBLIC_KEY=abc123
+SENDGRID_KEY=abc123
+```
+
+Install foreman for running with that .env file:
+
+```
+npm i -g foreman
+```
+
+Now start it up in development mode:
+
+```
+nf run ts-node src/index.ts
+```
 
 ## Architecture
 

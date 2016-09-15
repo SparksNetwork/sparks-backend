@@ -1,6 +1,14 @@
 machine:
   node:
     version: 6.1.0
+    
+notify:
+  webhooks:
+    - url: 'https://3ad91953.ngrok.io/release'
+
+dependencies:
+  pre:
+    - sudo apt-get update; sudo apt-get install jq
 
 deployment:
   staging:
@@ -11,8 +19,23 @@ deployment:
       - git push origin HEAD:release
       - git push --tags origin
       - git push git@heroku.com:sparks-backend-staging.git $CIRCLE_SHA1:refs/heads/master
+      - |-
+        curl -X POST https://sparks-bi.herokuapp.com/release \
+        -F 'stage=staging' \
+        -F 'name=sparks-backend' \
+        -F 'changelog=@./CHANGELOG.md' \
+        -F 'branch=release' \
+        -F 'version=$(jq -r ".version" package.json)'
 
   production:
     branch: master
-    heroku:
-      appname: sparks-backend-production
+    commands:
+      - "[[ ! -s \"$(git rev-parse --git-dir)/shallow\" ]] || git fetch --unshallow"
+      - git push git@heroku.com:sparks-backend-production.git $CIRCLE_SHA1:refs/heads/master
+      - |-
+        curl -X POST https://sparks-bi.herokuapp.com/release \
+        -F 'stage=production' \
+        -F 'name=sparks-backend' \
+        -F 'changelog=@./CHANGELOG.md' \
+        -F 'branch=master' \
+        -F 'version=$(jq -r ".version" package.json)'

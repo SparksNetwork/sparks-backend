@@ -1,3 +1,127 @@
+<a name="1.0.20"></a>
+## [1.0.20](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.19...v1.0.20) (2016-09-15)
+
+
+### Features
+
+* **application-cleanup:** alright you bastards ill fix the test ([55bc790](https://github.com/SparksNetwork/sparks-backend/commit/55bc790))
+* **application-cleanup:** new engagements dont get the isApplied flag, it only comes from an update ([a661b79](https://github.com/SparksNetwork/sparks-backend/commit/a661b79))
+
+
+
+<a name="1.0.19"></a>
+## [1.0.19](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.18...v1.0.19) (2016-09-06)
+
+
+
+<a name="1.0.18"></a>
+## [1.0.18](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.17...v1.0.18) (2016-09-03)
+
+
+### Bug Fixes
+
+* **CI:** submit version param to sparks-bi instead of tag ([3ed7ed1](https://github.com/SparksNetwork/sparks-backend/commit/3ed7ed1))
+
+
+
+<a name="1.0.17"></a>
+## [1.0.17](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.16...v1.0.17) (2016-09-03)
+
+
+### Features
+
+* **CI:** Read the version from the package.json file with jq ([64efe7b](https://github.com/SparksNetwork/sparks-backend/commit/64efe7b))
+
+
+
+<a name="1.0.16"></a>
+## [1.0.16](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.15...v1.0.16) (2016-09-03)
+
+
+
+<a name="1.0.15"></a>
+## [1.0.15](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.14...v1.0.15) (2016-08-31)
+
+
+### Features
+
+* **Shifts:** Delete assignments when deleting shifts ([f390057](https://github.com/SparksNetwork/sparks-backend/commit/f390057))
+
+
+
+<a name="1.0.14"></a>
+## [1.0.14](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.13...v1.0.14) (2016-08-30)
+
+
+
+<a name="1.0.13"></a>
+## [1.0.13](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.12...v1.0.13) (2016-08-30)
+
+
+
+<a name="1.0.12"></a>
+## [1.0.12](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.11...v1.0.12) (2016-08-30)
+
+
+
+<a name="1.0.11"></a>
+## [1.0.11](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.10...v1.0.11) (2016-08-30)
+
+
+
+<a name="1.0.10"></a>
+## [1.0.10](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.9...v1.0.10) (2016-08-21)
+
+
+### Features
+
+* **Changelog:** Push changelog information to bi project ([d00edbc](https://github.com/SparksNetwork/sparks-backend/commit/d00edbc))
+
+
+
+<a name="1.0.9"></a>
+## [1.0.9](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.8...v1.0.9) (2016-08-20)
+
+
+
+<a name="1.0.8"></a>
+## [1.0.8](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.7...v1.0.8) (2016-08-19)
+
+
+
+<a name="1.0.7"></a>
+## [1.0.7](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.6...v1.0.7) (2016-08-19)
+
+
+
+<a name="1.0.6"></a>
+## [1.0.6](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.5...v1.0.6) (2016-08-19)
+
+
+
+<a name="1.0.5"></a>
+## [1.0.5](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.4...v1.0.5) (2016-08-19)
+
+
+
+<a name="1.0.4"></a>
+## [1.0.4](https://github.com/sdebaun/sparks-backend/compare/v1.0.3...v1.0.4) (2016-08-18)
+
+
+
+<a name="1.0.3"></a>
+## [1.0.3](https://github.com/sdebaun/sparks-backend/compare/v1.0.2...v1.0.3) (2016-08-18)
+
+
+### Bug Fixes
+
+* **Engagements:** Add the engagement key when sending acceptance emails ([79cb13f](https://github.com/sdebaun/sparks-backend/commit/79cb13f))
+* **Engagements:** Add the engagement key when sending confirmation emails ([7ea5668](https://github.com/sdebaun/sparks-backend/commit/7ea5668))
+* **Memberships:** Create from values ([5365ad4](https://github.com/sdebaun/sparks-backend/commit/5365ad4))
+* **Memberships:** Handle missing answers on create ([06e15ee](https://github.com/sdebaun/sparks-backend/commit/06e15ee))
+
+
+
 <a name="1.0.2"></a>
 ## [1.0.2](https://github.com/sdebaun/sparks-backend/compare/v1.0.1...v1.0.2) (2016-08-14)
 
