@@ -1,3 +1,14 @@
+<a name="1.0.20"></a>
+## [1.0.20](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.19...v1.0.20) (2016-09-15)
+
+
+### Features
+
+* **application-cleanup:** alright you bastards ill fix the test ([55bc790](https://github.com/SparksNetwork/sparks-backend/commit/55bc790))
+* **application-cleanup:** new engagements dont get the isApplied flag, it only comes from an update ([a661b79](https://github.com/SparksNetwork/sparks-backend/commit/a661b79))
+
+
+
 <a name="1.0.19"></a>
 ## [1.0.19](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.18...v1.0.19) (2016-09-06)
 
