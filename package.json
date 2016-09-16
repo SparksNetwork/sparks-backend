@@ -8,8 +8,8 @@
   "scripts": {
     "start": "node dist/index.js",
     "heroku-postbuild": "npm run build",
-    "build": "tsc",
-    "test": "npm run build && node_modules/.bin/tap --cov dist/**/*.test.js src/*.test.js",
+    "build": "tsc && babel -d dist dist",
+    "test": "tsc && node_modules/.bin/tap --cov dist/**/*.js src/**/*.js .js",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",
     "version": "npm run changelog",
@@ -37,6 +37,7 @@
     }
   },
   "devDependencies": {
+    "babel-cli": "^6.14.0",
     "blue-tape": "^1.0.0",
     "commitizen": "^2.8.6",
     "conventional-changelog": "^1.1.0",
