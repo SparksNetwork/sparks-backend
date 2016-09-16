@@ -1,3 +1,13 @@
+<a name="1.0.24"></a>
+## [1.0.24](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.23...v1.0.24) (2016-09-16)
+
+
+### Bug Fixes
+
+* **Firebase:** Only initialize firebase module once ([3933214](https://github.com/SparksNetwork/sparks-backend/commit/3933214))
+
+
+
 <a name="1.0.23"></a>
 ## [1.0.23](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.22...v1.0.23) (2016-09-16)
 
