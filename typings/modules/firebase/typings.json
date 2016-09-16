@@ -1,0 +1,10 @@
+{
+  "resolution": "main",
+  "tree": {
+    "main": "firebase.d.ts",
+    "version": "2.0.0",
+    "global": false,
+    "name": "firebase",
+    "type": "typings"
+  }
+}

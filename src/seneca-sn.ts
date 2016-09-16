@@ -1,35 +1,20 @@
-import snFirebase from './firebase-sn'
 import firebaseGet from './firebase-get'
+import snFirebase from './firebase-sn'
 import braintree from './braintree'
 import auth from './auth'
 import tasks from './tasks'
 import email from './email'
-
-const collections = [
-  'Arrivals',
-  'Assignments',
-  'Commitments',
-  'Engagements',
-  'Fulfillers',
-  'Memberships',
-  'Opps',
-  'Organizers',
-  'Projects',
-  'ProjectImages',
-  'Profiles',
-  'Shifts',
-  'Teams',
-  'TeamImages',
-]
+import {pong} from './pong';
 
 export default function({cfg}) {
   const seneca = this
-  seneca.use(snFirebase, {cfg, collections})
+  seneca.use(snFirebase, {cfg})
   seneca.use(firebaseGet)
   seneca.use(email)
   seneca.use(braintree, cfg)
   seneca.use(tasks, {})
-  seneca.use(auth, {collections})
+  seneca.use(auth)
+  seneca.use(pong)
 
   return 'sn'
 }

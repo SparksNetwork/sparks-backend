@@ -40,3 +40,15 @@ declare interface FulfilledSpec {
   commitments:Commitment[]
   [propName:string]: null | any
 }
+
+declare interface SenecaPattern {
+  role:string
+  cmd:string
+  [key:string]:any
+}
+
+declare interface SenecaResponse {
+  reject?:any
+  error?:any
+  [key:string]:any
+}

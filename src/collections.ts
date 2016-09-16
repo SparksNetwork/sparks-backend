@@ -1,38 +1,31 @@
 import {keys, merge} from 'ramda'
 
-export function objToRows(obj) {
+interface FirebaseRecord {
+  $key:string
+  [key:string]:any
+}
+
+export function objToRows(obj:any):FirebaseRecord[] {
   return obj && keys(obj).map(key => merge(obj[key], {$key: key})) || []
 }
 
-const byChildKey = root => (field, key) => {
-  console.log('Looking up',field,'of',key)
-  return root.orderByChild(field).equalTo(key).once('value')
-  .then(snap => objToRows(snap.val()))
-}
-
-const firstByChildKey = function(root) {
-  return function(field, key) {
-    return byChildKey(root)(field,key).then(rows => rows.length > 0 && rows[0])
+export function byChildKey(root:Firebase) {
+  return function(field:string, key:any):Promise<FirebaseRecord[]> {
+    console.log('Looking up',field,'of',key)
+    return root.orderByChild(field).equalTo(key).once('value')
+      .then(snap => objToRows(snap.val()))
   }
 }
 
-const byKey = root => key => {
-  console.log(`Looking up ${root.key()} ${key}`)
-  return root.child(key).once('value')
-    .then(snap => merge(snap.val(), {$key: key}))
+export function firstByChildKey(root:Firebase) {
+  return function(field:string, key:any):Promise<FirebaseRecord> {
+    return byChildKey(root)(field,key).then(rows => rows[0])
+  }
 }
 
-const createCollectionObject = (fb, name) => {
-  const root = fb.child(name)
-  root.by = byChildKey(root)
-  root.first = firstByChildKey(root)
-  root.get = byKey(root)
-  return root
+export function byKey(root:Firebase) {
+  return function(key:string):Promise<FirebaseRecord> {
+    return root.child(key).once('value')
+      .then(snap => merge(snap.val(), {$key: key}))
+  }
 }
-
-const addCollection = fb => (a,x) =>
-  (a[x] = createCollectionObject(fb, x)) && a
-
-export const makeCollections = (fb, collections) =>
-  collections.reduce(addCollection(fb), {})
-
