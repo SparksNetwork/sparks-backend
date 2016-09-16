@@ -2,13 +2,16 @@ machine:
   node:
     version: 6.1.0
     
-notify:
-  webhooks:
-    - url: 'https://3ad91953.ngrok.io/release'
-
 dependencies:
   pre:
-    - sudo apt-get update; sudo apt-get install jq
+    - sudo apt-get update; sudo apt-get install jq parallel
+  post:
+    - npm i tap-xunit
+
+test:
+  override:
+    - bin/test:
+        parallel: true
 
 deployment:
   staging:
