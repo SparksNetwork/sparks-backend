@@ -4,8 +4,31 @@ import * as BPromise from 'bluebird'
 import {
   T, always, applySpec, complement, compose, cond, equals, filter,
   fromPairs, head, keys, lensPath, map, mapObjIndexed, objOf, prop, propEq,
-  tail, type, values, view, omit, toPairs, not, merge,
+  tail, type, values, view, omit, toPairs, not, merge, flip, pick, contains
 } from 'ramda'
+import * as test from 'tape-async'
+
+function createSpecFromMsg(msg):Spec {
+  return compose(
+    flip<any, any, (any) => Spec>(pick)(msg),
+    filter(complement(contains('$'))),
+    keys,
+    omit(['role', 'cmd'])
+  )(msg)
+}
+test('createSpecFromMsg', async function(t) {
+  const spec = createSpecFromMsg({
+    engagement: 1,
+    assignments: ['engagement', '$key'],
+    Plugin$s: 'abc',
+    $default: 'moose'
+  })
+
+  t.deepEqual(spec, {
+    engagement: 1,
+    assignments: ['engagement', '$key']
+  })
+})
 
 export default function firebaseGet() {
   const seneca = this
@@ -153,8 +176,7 @@ export default function firebaseGet() {
 
   this.add({role:'Firebase',cmd:'get'}, async function(msg):Promise<FulfilledSpec> {
     if (msg.model) { return await this.prior(msg) }
-
-    const spec = omit(['role','cmd','default$','meta$','tx$'], msg)
+    const spec = createSpecFromMsg(msg)
     return await getStuff(spec)
   })
 
