@@ -1,9 +1,7 @@
 /// <reference path="./firebase-queue.d.ts" />
 import * as FirebaseQueue from 'firebase-queue'
 import {when, compose, equals, keys, prop, merge, type, identity} from 'ramda'
-
 import * as test from 'tape-async'
-import {spy} from 'sinon'
 import {pushMetric} from './metrics'
 
 const log = console.log.bind(console)
@@ -178,77 +176,78 @@ export function startDispatch(ref:Firebase, seneca) {
   })
 }
 
-export function runTests() {
-  test('createRecorder', async function(t) {
-    const data = {some: 'data'}
-    const timestamp = Date.now()
-    const ref = {} as Firebase
-    const pushSpy = spy()
-    ref.push = pushSpy
-    const recorder = createRecorder(ref, 'my tag')
+test('createRecorder', async function(t) {
+  const spy = require('sinon').spy
+  const data = {some: 'data'}
+  const timestamp = Date.now()
+  const ref = {} as Firebase
+  const pushSpy = spy()
+  ref.push = pushSpy
+  const recorder = createRecorder(ref, 'my tag')
 
-    const response = await recorder(data)
-    const pushArgs = pushSpy.getCall(0).args[0]
+  const response = await recorder(data)
+  const pushArgs = pushSpy.getCall(0).args[0]
 
-    t.equals(response, data)
-    t.equals(pushSpy.callCount, 1)
-    t.equals(pushArgs.tag, 'my tag')
-    t.ok(pushArgs.timestamp >= timestamp)
-  })
+  t.equals(response, data)
+  t.equals(pushSpy.callCount, 1)
+  t.equals(pushArgs.tag, 'my tag')
+  t.ok(pushArgs.timestamp >= timestamp)
+})
 
-  test('createHandler', async function (t) {
-    const data = {
-      domain: 'test', action: 'createHandlerTest', uid: 'abc123',
-      payload: {some: 'data'}
-    }
-    const actSpy = spy(() => ({pass: 'on'}))
-    const seneca = {act: actSpy}
-    const handler = createHandler(seneca)
-    const response = await handler(data)
+test('createHandler', async function (t) {
+  const spy = require('sinon').spy
+  const data = {
+    domain: 'test', action: 'createHandlerTest', uid: 'abc123',
+    payload: {some: 'data'}
+  }
+  const actSpy = spy(() => ({pass: 'on'}))
+  const seneca = {act: actSpy}
+  const handler = createHandler(seneca)
+  const response = await handler(data)
 
-    t.ok(response)
-    t.equals(actSpy.callCount, 2)
-    t.deepEqual(actSpy.getCall(0).args, [{
-      model: 'test',
-      cmd: 'createHandlerTest',
-      role: 'Auth',
-      some: 'data',
-      uid: 'abc123',
-    }])
-    t.deepEqual(actSpy.getCall(1).args, [{
-      role: 'test',
-      cmd: 'createHandlerTest',
-      some: 'data',
-      pass: 'on',
-      uid: 'abc123',
-    }])
-    t.deepEquals(response, {pass: 'on'})
-  })
+  t.ok(response)
+  t.equals(actSpy.callCount, 2)
+  t.deepEqual(actSpy.getCall(0).args, [{
+    model: 'test',
+    cmd: 'createHandlerTest',
+    role: 'Auth',
+    some: 'data',
+    uid: 'abc123',
+  }])
+  t.deepEqual(actSpy.getCall(1).args, [{
+    role: 'test',
+    cmd: 'createHandlerTest',
+    some: 'data',
+    pass: 'on',
+    uid: 'abc123',
+  }])
+  t.deepEquals(response, {pass: 'on'})
+})
 
-  test('createResponder', async function (t) {
-    const data = {domain: 'test', action: 'createResponderTest', uid: 'abc123', _id: '123abc'}
-    const ref = {} as Firebase
+test('createResponder', async function (t) {
+  const spy = require('sinon').spy
+  const data = {domain: 'test', action: 'createResponderTest', uid: 'abc123', _id: '123abc'}
+  const ref = {} as Firebase
 
-    const childSpy = spy(() => ref)
-    const setSpy = spy()
+  const childSpy = spy(() => ref)
+  const setSpy = spy()
 
-    ref.child = childSpy
-    ref.set = setSpy
+  ref.child = childSpy
+  ref.set = setSpy
 
-    const responder = createResponder(ref)
-    const respond = responder(data)
+  const responder = createResponder(ref)
+  const respond = responder(data)
 
-    const response = await respond({some: 'data'})
+  const response = await respond({some: 'data'})
 
-    t.ok(response)
-    t.equals(childSpy.callCount, 2)
-    t.deepEquals(childSpy.getCall(0).args, ['abc123'])
-    t.deepEquals(childSpy.getCall(1).args, ['123abc'])
-    t.equals(setSpy.callCount, 1)
-    t.deepEquals(setSpy.getCall(0).args, [{
-      domain: 'test',
-      event: 'createResponderTest',
-      payload: {some: 'data'}
-    }])
-  })
-}
+  t.ok(response)
+  t.equals(childSpy.callCount, 2)
+  t.deepEquals(childSpy.getCall(0).args, ['abc123'])
+  t.deepEquals(childSpy.getCall(1).args, ['123abc'])
+  t.equals(setSpy.callCount, 1)
+  t.deepEquals(setSpy.getCall(0).args, [{
+    domain: 'test',
+    event: 'createResponderTest',
+    payload: {some: 'data'}
+  }])
+})
