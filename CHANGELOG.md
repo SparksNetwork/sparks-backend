@@ -1,3 +1,15 @@
+<a name="1.0.21"></a>
+## [1.0.21](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.20...v1.0.21) (2016-09-16)
+
+
+### Features
+
+* **Dispatch:** Add ping/pong so that dispatch is constantly being run and tested ([7fe9bd3](https://github.com/SparksNetwork/sparks-backend/commit/7fe9bd3))
+* **Metrics:** Add a metric aggregation program ([70090fb](https://github.com/SparksNetwork/sparks-backend/commit/70090fb))
+* **Metrics:** Add metric removal program ([8962af1](https://github.com/SparksNetwork/sparks-backend/commit/8962af1))
+
+
+
 <a name="1.0.20"></a>
 ## [1.0.20](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.19...v1.0.20) (2016-09-15)
 
