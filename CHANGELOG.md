@@ -1,3 +1,14 @@
+<a name="1.0.25"></a>
+## [1.0.25](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.24...v1.0.25) (2016-09-17)
+
+
+### Bug Fixes
+
+* **FirebaseGet:** Properly filter out all non-spec properties ([ea2caec](https://github.com/SparksNetwork/sparks-backend/commit/ea2caec))
+* **Test:** Only run tests for run file ([8e57110](https://github.com/SparksNetwork/sparks-backend/commit/8e57110))
+
+
+
 <a name="1.0.24"></a>
 ## [1.0.24](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.23...v1.0.24) (2016-09-16)
 
