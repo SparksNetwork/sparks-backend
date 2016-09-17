@@ -1,8 +1,8 @@
 /// <reference path="./firebase-queue.d.ts" />
 import * as FirebaseQueue from 'firebase-queue'
 import {when, compose, equals, keys, prop, merge, type, identity} from 'ramda'
-import * as test from 'tape-async'
 import {pushMetric} from './metrics'
+import {test} from "./test/test";
 
 const log = console.log.bind(console)
 
@@ -176,7 +176,7 @@ export function startDispatch(ref:Firebase, seneca) {
   })
 }
 
-test('createRecorder', async function(t) {
+test(__filename, 'createRecorder', async function(t) {
   const spy = require('sinon').spy
   const data = {some: 'data'}
   const timestamp = Date.now()
@@ -194,7 +194,7 @@ test('createRecorder', async function(t) {
   t.ok(pushArgs.timestamp >= timestamp)
 })
 
-test('createHandler', async function (t) {
+test(__filename, 'createHandler', async function (t) {
   const spy = require('sinon').spy
   const data = {
     domain: 'test', action: 'createHandlerTest', uid: 'abc123',
@@ -224,7 +224,7 @@ test('createHandler', async function (t) {
   t.deepEquals(response, {pass: 'on'})
 })
 
-test('createResponder', async function (t) {
+test(__filename, 'createResponder', async function (t) {
   const spy = require('sinon').spy
   const data = {domain: 'test', action: 'createResponderTest', uid: 'abc123', _id: '123abc'}
   const ref = {} as Firebase

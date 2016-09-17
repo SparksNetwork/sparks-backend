@@ -6,7 +6,7 @@ import {
   fromPairs, head, keys, lensPath, map, mapObjIndexed, objOf, prop, propEq,
   tail, type, values, view, omit, toPairs, not, merge, flip, pick, contains
 } from 'ramda'
-import * as test from 'tape-async'
+import {test} from "./test/test";
 
 function createSpecFromMsg(msg):Spec {
   return compose(
@@ -16,7 +16,7 @@ function createSpecFromMsg(msg):Spec {
     omit(['role', 'cmd'])
   )(msg)
 }
-test('createSpecFromMsg', async function(t) {
+test(__filename, 'createSpecFromMsg', function(t) {
   const spec = createSpecFromMsg({
     engagement: 1,
     assignments: ['engagement', '$key'],
@@ -28,6 +28,8 @@ test('createSpecFromMsg', async function(t) {
     engagement: 1,
     assignments: ['engagement', '$key']
   })
+
+  t.end()
 })
 
 export default function firebaseGet() {

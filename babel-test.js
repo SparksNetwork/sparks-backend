@@ -9,12 +9,12 @@ module.exports = function ({types: t}) {
         if (t.isMemberExpression(callee)) {
           if (
             callee.property.name === 'test' &&
-            callee.object.name.match(/tape/)
+            callee.object.name.match(/tape|test/)
           ) {
             return path.remove()
           }
         } else {
-          if (callee.name === 'test' && node.arguments.length === 2) {
+          if (callee.name === 'test' && node.arguments.length === 2 || node.arguments.length === 3) {
             return path.remove()
           }
         }
@@ -30,7 +30,10 @@ module.exports = function ({types: t}) {
         const args = init.arguments
         if(!args) { return }
 
-        if (callee.name === 'require' && args.length === 1 && args[0].value === 'tape-async') {
+        if (callee.name === 'require'
+            && args.length === 1
+            && args[0].value.match(/tape|test/)
+        ) {
           path.remove()
         }
       }
