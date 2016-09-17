@@ -13,8 +13,8 @@ module.exports = function ({types: t}) {
           ) {
             return path.remove()
           }
-        } else {
-          if (callee.name === 'test' && node.arguments.length === 2 || node.arguments.length === 3) {
+        } else if(callee.name === 'test') {
+          if (node.arguments.length === 2 || node.arguments.length === 3) {
             return path.remove()
           }
         }
