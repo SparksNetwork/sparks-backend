@@ -1,3 +1,13 @@
+<a name="1.0.26"></a>
+## [1.0.26](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.25...v1.0.26) (2016-09-17)
+
+
+### Bug Fixes
+
+* **Build:** Don't delete all calls with 3 arguments ([b4861ff](https://github.com/SparksNetwork/sparks-backend/commit/b4861ff))
+
+
+
 <a name="1.0.25"></a>
 ## [1.0.25](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.24...v1.0.25) (2016-09-17)
 
