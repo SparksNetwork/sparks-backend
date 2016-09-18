@@ -1,4 +1,3 @@
-/// <reference path="./braintree-node.d.ts" />
 import * as braintree from 'braintree-node'
 
 export default function(cfg) {

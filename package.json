@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "heroku-postbuild": "npm run build",
     "build": "tsc && babel -d dist dist",
-    "test": "tsc && node_modules/.bin/tap --cov dist/**/*.js src/**/*.js .js",
+    "test": "bin/test",
     "testci": "tsc && parallel --no-notice -j4 \"node --no-warnings {} 2>/dev/null | tap-xunit 1> ${$CIRCLE_TEST_REPORTS}/{#}.xml\" ::: dist/**/*.js",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",

@@ -1,4 +1,3 @@
-/// <reference path="../sendgrid.d.ts" />
 import * as assert from 'assert'
 import * as SendGrid from 'sendgrid'
 

@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-mkdir -p $CIRCLE_TEST_REPORTS/junit
 tsc
 
-COMMAND="node --no-warnings {} 2>/dev/null | node_modules/.bin/tap-xunit 1> $CIRCLE_TEST_REPORTS/junit/{#}_{/.}.xml"
+COMMAND="node --no-warnings {} 2>/dev/null"
+
+if [ -n "${CIRCLE_TEST_REPORTS}" ]
+then
+    mkdir -p $CIRCLE_TEST_REPORTS/junit
+    COMMAND="$COMMAND | node_modules/.bin/tap-xunit 1> $CIRCLE_TEST_REPORTS/junit/{#}_{/.}.xml"
+fi
 
 if [ -n "${CIRCLE_NODE_TOTAL}" ]
 then

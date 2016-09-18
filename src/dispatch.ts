@@ -1,4 +1,3 @@
-/// <reference path="./firebase-queue.d.ts" />
 import * as FirebaseQueue from 'firebase-queue'
 import {when, compose, equals, keys, prop, merge, type, identity} from 'ramda'
 import {pushMetric} from './metrics'

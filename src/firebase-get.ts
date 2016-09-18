@@ -1,4 +1,3 @@
-/// <reference path="./models.d.ts" />
 import * as Inflection from 'inflection'
 import * as BPromise from 'bluebird'
 import {
