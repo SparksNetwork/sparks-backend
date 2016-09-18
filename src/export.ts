@@ -1,7 +1,7 @@
-import {firebase} from './process-firebase'
+import {firebase} from './firebase/process-firebase'
 import {propEq, join, find, tap, concat, merge, prop} from 'ramda'
 import {format} from 'util'
-import {objToRows} from './collections'
+import {objToRows} from './firebase/collections'
 
 function out(...msg:any[]):void {
   const str:string = format(...msg)

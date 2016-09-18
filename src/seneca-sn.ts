@@ -1,4 +1,4 @@
-import firebaseGet from './firebase-get'
+import firebaseGet from './firebase/firebase-get'
 import braintree from './braintree'
 import auth from './auth'
 import tasks from './tasks'

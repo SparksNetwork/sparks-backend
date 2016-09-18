@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import {
   compose, concat, map, pick, prop, sum, propOr,
 } from 'ramda'
-import {Model} from '../firebase-sn'
+import {Model} from '../firebase/firebase-sn'
 import defaults from './defaults'
 
 const SPARKS_RATE = 0.035

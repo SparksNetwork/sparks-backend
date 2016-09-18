@@ -1,5 +1,5 @@
 import load from '../load'
-import {objToRows} from '../collections'
+import {objToRows} from '../firebase/collections'
 
 async function migrate() {
   const seneca = await load()

@@ -1,7 +1,7 @@
 import * as tapeTest from 'tape-async'
 import * as Seneca from 'seneca-await'
 import mockFirebase from './mock-firebase'
-import firebaseGet from '../firebase-get'
+import firebaseGet from '../firebase/firebase-get'
 import fixtures from './fixtures'
 
 function tape(namespace, plugins) {
