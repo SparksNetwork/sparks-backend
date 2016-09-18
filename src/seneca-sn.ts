@@ -3,7 +3,7 @@ import braintree from './braintree'
 import auth from './auth'
 import tasks from './tasks'
 import email from './email'
-import {pong} from './pong';
+import {pong} from './pingpong/pong';
 
 export default function({cfg}) {
   const seneca = this

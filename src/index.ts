@@ -6,7 +6,7 @@ import senecaSn from './seneca-sn'
 import cfg from './cfg'
 import {startDispatch} from './dispatch'
 import {startMetrics} from './metrics'
-import {startPing} from "./ping";
+import {startPing} from "./pingpong/ping";
 
 const app = express()
 
