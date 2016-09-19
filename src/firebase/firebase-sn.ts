@@ -3,7 +3,7 @@ import {
 } from './collections'
 
 interface FirebaseValue {
-  [propName:string]:FirebaseValue | string | boolean | number
+  [propName:string]:FirebaseValue | string | boolean | number | FirebaseValue
 }
 
 export function Model(model:string) {

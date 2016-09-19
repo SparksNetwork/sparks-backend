@@ -1,12 +1,25 @@
 import * as assert from 'assert'
 import {
-  compose, concat, map, pick, prop, sum, propOr,
+  compose, concat, map, pick, prop, sum, propOr, curry, add, multiply, merge
 } from 'ramda'
 import {Model} from '../firebase/firebase-sn'
 import defaults from './defaults'
+import {test} from "../test/test";
+import {
+  SubscriptionOptions,
+  SubscriptionAddOn,
+  Customer
+} from "../../typings/braintree-node";
+import {create} from "domain";
+import {Test} from "tape-async";
 
 const SPARKS_RATE = 0.035
 const SPARKS_MIN = 1.0
+
+interface Payment {
+  payment:string
+  deposit:string
+}
 
 /**
  * Convert a dollar string to dollars
@@ -14,6 +27,29 @@ const SPARKS_MIN = 1.0
 function extractAmount(amount:string | number):number {
   return parseInt(`${amount}`.replace(/[^0-9\.]/g, ''), 10)
 }
+test(__filename, 'extractAmount', async function(t) {
+  t.equal(extractAmount('10'), 10, 'extracts 10')
+  t.equal(extractAmount('17'), 17, 'extracts 17')
+  t.equal(extractAmount('10.76'), 10, 'extracts 10')
+  t.equal(extractAmount('$10'), 10, 'extracts $10')
+  t.equal(extractAmount('$15'), 15, 'extracts $15')
+  t.equal(extractAmount('$10.76'), 10, 'extracts $10')
+  t.equal(extractAmount('$0.00'), 0, 'extracts $0.00')
+})
+
+const chopFloat = curry((chop, amount:number) =>
+  Number(amount.toFixed(chop))
+)
+
+/**
+ * Add sparks portion of payment
+ * @type {(x0:number)=>number}
+ */
+const addSparks = compose(
+  chopFloat(3),
+  add(SPARKS_MIN),
+  multiply(SPARKS_RATE)
+)
 
 /**
  * Calculate the sparks portion of the payment
@@ -23,12 +59,21 @@ function extractAmount(amount:string | number):number {
  * @returns {number}
  */
 function calcSparks(payment:number, deposit:number):number {
-  if (payment + deposit === 0.0) {
+  const total = payment + deposit
+
+  if (total === 0.0) {
     return 0.0
   } else {
-    return (payment + deposit) * SPARKS_RATE + SPARKS_MIN
+    return addSparks(total)
   }
 }
+test(__filename, 'calcSparks', async function(t) {
+  t.equal(calcSparks(0, 0), 0.0)
+  t.equal(calcSparks(1, 0), 1.035)
+  t.equal(calcSparks(0, 1), 1.035)
+  t.equal(calcSparks(2, 0), 1.07)
+  t.equal(calcSparks(2, 2), 1.14)
+})
 
 const commitmentAmount:(Commitment) => number =
   compose<Commitment, number | string, number>(
@@ -44,6 +89,14 @@ const commitmentAmount:(Commitment) => number =
 function calcPayable(payment:number, deposit:number):string {
   return (payment + calcSparks(payment, deposit)).toFixed(2)
 }
+test(__filename, 'calcPayable', async function(t) {
+  t.equal(calcPayable(0, 0), '0.00', '0 + 0 = 0')
+  t.equal(calcPayable(1, 0), '2.04', '1 + 0 = 2.04')
+  t.equal(calcPayable(1, 1), '2.07', '1 + 1 = 2.07')
+  t.equal(calcPayable(0, 1), '1.03', '0 + 1 = 1.03')
+  t.equal(calcPayable(2, 0), '3.07', '2 + 0 = 3.07')
+  t.equal(calcPayable(2, 2), '3.14', '2 + 2 = 3.14')
+})
 
 /**
  * Calculate the total payable amount from commitments
@@ -51,193 +104,302 @@ function calcPayable(payment:number, deposit:number):string {
  * @param {Commitment[]} commitments
  * @returns {number}
  */
-function calcPayment(commitments:Commitment[]):string {
-  const paymentComms = commitments.filter(c => c.code === 'payment')
-  const depositComms = commitments.filter(c => c.code === 'deposit')
-  const payment = compose(sum, map(commitmentAmount))(paymentComms)
-  const deposit = compose(sum, map(commitmentAmount))(depositComms)
+function calcPayment(commitments:{code?:string, amount?:string}[]):Payment {
+  const paymentCommitments = commitments.filter(c => c.code === 'payment')
+  const depositCommitments = commitments.filter(c => c.code === 'deposit')
+  const payment = compose(sum, map(commitmentAmount))(paymentCommitments)
+  const deposit = compose(sum, map(commitmentAmount))(depositCommitments)
 
-  return calcPayable(payment, deposit)
+  const payNow = calcPayable(payment, deposit)
+
+  return {
+    payment: payNow,
+    deposit: deposit.toFixed(2)
+  }
+}
+test(__filename, 'calcPayment', async function(t) {
+  const com1p = {code: 'payment', amount: '$1'}
+  const com1d = {code: 'deposit', amount: '$1'}
+  const com2p = {code: 'payment', amount: '$30'}
+  const com2d = {code: 'deposit', amount: '$150'}
+
+  t.deepEqual(calcPayment([]), {payment: '0.00', deposit: '0.00'})
+  t.deepEqual(calcPayment([com1p]), {payment: '2.04', deposit: '0.00'})
+  t.deepEqual(calcPayment([com1d]), {payment: '1.03', deposit: '1.00'})
+  t.deepEqual(calcPayment([com1d, com1p]), {payment: '2.07', deposit: '1.00'})
+  t.deepEqual(calcPayment([com2p, com2d]), {payment: '37.30', deposit: '150.00'})
+})
+
+async function generateClientToken(profileKey:string):Promise<{paymentClientToken:string, gatewayId:string}> {
+  const gatewayCustomer: Customer = await this.act('role:GatewayCustomers,cmd:get', {profileKey})
+  const {clientToken} = await this.act('role:gateway,cmd:generateClientToken', {
+    options: {customerId: gatewayCustomer.id}
+  })
+  return {
+    paymentClientToken: clientToken,
+    gatewayId: gatewayCustomer.id
+  }
 }
 
-function Engagements() {
-  const seneca = this
-  const get:(Spec) => Promise<FulfilledSpec> = spec => seneca.act('role:Firebase,cmd:get', spec)
-  const Engagements = Model('Engagements')(seneca)
-
-  this.add({role:'Engagements',cmd:'create'}, async function({oppKey, profileKey}) {
-    const {clientToken} = await this.act('role:gateway,cmd:generateClientToken')
-
-    const {key} = await Engagements.push({
-      oppKey,
-      profileKey,
-      isApplied: false,
-      isAccepted: false,
-      isConfirmed: false,
-      paymentClientToken: clientToken,
-    })
-
-    return {key}
-  })
-
-  const removeAssignments = keys => Promise.all(keys.map(key =>
-    seneca.act('role:Firebase,model:Assignments,cmd:remove', {key})
+async function removeAssignments(keys:string[]) {
+  return await Promise.all(keys.map(key =>
+    this.act('role:Firebase,model:Assignments,cmd:remove', {key})
   ))
+}
 
-  const updateShiftCounts = keys => Promise.all(keys.map(key =>
-    seneca.act({
+async function updateShiftCounts(keys:string[]) {
+  return await Promise.all(keys.map(key =>
+    this.act({
       role:'Shifts',
       cmd:'updateCounts',
       key,
-    })))
+    })
+  ))
+}
 
-  this.add({role:'Engagements',cmd:'remove'}, async function({key}) {
-    const {assignments} = await get({assignments: {engagementKey: key}})
+async function ensureEngagementHasToken(key:string) {
+  const {engagement} = await this.act('role:Firebase,cmd:get', {engagement:key})
+  if (engagement.gatewayId) { return }
+  const token = await generateClientToken.call(this, engagement.profileKey)
+  await this.act('role:Firebase,model:Engagements,cmd:update', {values: token})
+}
+test(__filename, 'ensureEngagementHasToken', async function(t:Test) {
+  const spy = require('sinon').spy
+  const engWithGatewayId = {gatewayId: 'abc123'}
+  const engWithoutGatewayId = {profileKey: 'dec234'}
+  const context:any = {}
 
-    await removeAssignments(assignments.map(prop('$key')))
-    await updateShiftCounts(assignments.map(prop('shiftKey')))
-    await Engagements.remove(key)
+  context.act = spy(async function() { return {engagement: engWithGatewayId} })
+  await ensureEngagementHasToken.call(context, 'abc123')
+  t.equal(context.act.callCount, 1, 'early exit')
 
-    return {key}
-  })
+  context.act = spy(async function() { return {engagement: engWithoutGatewayId} })
+  await ensureEngagementHasToken.call(context, 'abc123')
+  t.equal(context.act.callCount, 4, 'all the acts')
+})
 
-  async function canChangeOpp(engagement, oppKey, userRole) {
-    if (userRole !== 'project') { return false }
-    if (engagement.isConfirmed) { return false }
-    if (engagement.oppKey === oppKey) { return false }
+async function canChangeOpp(engagement, oppKey, userRole) {
+  if (userRole !== 'project') { return false }
+  if (engagement.isConfirmed) { return false }
+  if (engagement.oppKey === oppKey) { return false }
 
-    const {opp: oldOpp} = await get({opp: engagement.oppKey})
-    const {opp: newOpp} = await get({opp: oppKey})
+  const {opp: oldOpp} = await this.get({opp: engagement.oppKey})
+  const {opp: newOpp} = await this.get({opp: oppKey})
 
-    return oldOpp && newOpp && oldOpp.projectKey === newOpp.projectKey
-  }
+  return oldOpp && newOpp && oldOpp.projectKey === newOpp.projectKey
+}
 
-  this.add('role:Engagements,cmd:changeOpp,public$:false', async function({engagement, oppKey}) {
-    const {memberships} = await get({memberships: {engagementKey: engagement.$key}})
+async function updateEngagement(key:string, values:any, userRole:string) {
+  await ensureEngagementHasToken.call(this, key)
 
-    await Promise.all(
-      concat(
-        [this.act('role:Firebase,model:Engagements,cmd:update', {key: engagement.$key, values: {oppKey}})],
-        memberships.map(({$key}) =>
-          this.act('role:Firebase,model:Memberships,cmd:update', {key: $key, values: {oppKey}})
-        )
-      )
-    )
-
-    return {key: engagement.$key}
-  })
-
-  this.add({role:'Engagements',cmd:'update'}, async function({key, values, userRole}) {
-    const allowedFields = {
+  const allowedFields = {
       volunteer: ['answer', 'isAssigned', 'isApplied'],
       project: ['answer', 'isAssigned', 'isAccepted', 'isApplied', 'priority', 'declined'],
     }[userRole] || []
 
-    await Engagements.update(key, pick<any, any>(allowedFields, values))
-    const {engagement} = await get({engagement: key})
+  await this.update(key, pick<any, any>(allowedFields, values))
+  const {engagement} = await this.get({engagement: key})
 
-    if (values.oppKey && await canChangeOpp(engagement, values.oppKey, userRole)) {
-      await this.act('role:Engagements,cmd:changeOpp', {engagement, oppKey: values.oppKey})
-    }
-
-    if (values.isAccepted) {
-      await this.act('role:Engagements,cmd:sendEmail,email:accepted', {key})
-    }
-
-    if (values.isApplied) {
-      await this.act('role:email,cmd:send,email:engagement', {
-        templateId: '96e36ab7-43b0-4d45-8309-32c52530bd8a',
-        subject:'You\'ve Applied to',
-        profileKey: engagement.profileKey,
-        oppKey: engagement.oppKey,
-      })
-    }
-
-    const {isAssigned, isPaid} = engagement
-    const isConfirmed = Boolean(isAssigned && isPaid)
-    await Engagements.update(key, {isConfirmed})
-
-    return {key}
-  })
-
-  async function makePayment(key:string, nonce:string, amount:string):Promise<boolean> {
-    try {
-      const {success, transaction} = await seneca.act('role:gateway,cmd:createTransaction', {
-        amount,
-        nonce,
-      })
-
-      await Engagements.update(key, {
-          transaction,
-          amountPaid: transaction.amount,
-          isPaid: success,
-          isConfirmed: success,
-          paymentError: success ? false : transaction.status,
-        })
-
-      return true
-    } catch (error) {
-      console.log('GATEWAY TRANSACTION ERROR', error)
-      await Engagements.update(key, {
-        isPaid: false,
-        isConfirmed: false,
-        paymentError: error.type,
-      })
-      return false
-    }
+  if (values.oppKey && await canChangeOpp.call(this, engagement, values.oppKey, userRole)) {
+    await this.act('role:Engagements,cmd:changeOpp', {
+      engagement,
+      oppKey: values.oppKey
+    })
   }
 
-  this.add({role:'Engagements',cmd:'confirmWithoutPay'}, async function({key, uid}) {
-    const {engagement, opp, commitments} = await get({
-      engagement: key,
-      opp: ['engagement', 'oppKey'],
-      commitments: {oppKey: ['engagement', 'oppKey']}
+  if (values.isAccepted) {
+    await this.act('role:Engagements,cmd:sendEmail,email:accepted', {key})
+  }
+
+  if (values.isApplied) {
+    await this.act('role:email,cmd:send,email:engagement', {
+      templateId: '96e36ab7-43b0-4d45-8309-32c52530bd8a',
+      subject: 'You\'ve Applied to',
+      profileKey: engagement.profileKey,
+      oppKey: engagement.oppKey,
     })
+  }
 
-    assert(engagement, 'Engagement does not exist')
-    assert(opp, 'Opp does not exist')
+  const {isAssigned, isPaid} = engagement
+  const isConfirmed = Boolean(isAssigned && isPaid)
+  await this.update(key, {isConfirmed})
 
-    const payment = calcPayment(commitments)
+  return {key}
+}
 
-    if (payment !== '0.00') {
-      throw new Error(`Cannot no pay, ${payment} due!`)
+async function makePayment(key:string, nonce:string, payment:Payment):Promise<boolean> {
+  try {
+    const paymentAddon:SubscriptionAddOn = {
+      amount: payment.payment,
+      quantity: 1,
+      inheritedFromId: 'payment'
     }
 
-    await Engagements.update(key, {
-      isPaid: true,
-      isConfirmed: true,
+    const options:SubscriptionOptions = {
+      options: {
+        startImmediately: true,
+        doNotInheritAddOnsOrDiscounts: true
+      },
+      neverExpires: true,
+      paymentMethodNonce: nonce,
+      planId: 'event-deposit',
+      price: '0.00',
+      addOns: {
+        add: [paymentAddon]
+      }
+    }
+
+    const {success, subscription} = await this.act('role:gateway,cmd:createSubscription', {options})
+    const transaction = subscription.transactions[0]
+
+    await this.update(key, {
+      subscriptionId: subscription.id,
+      paymentTransactionId: transaction.id,
+      amountPaid: transaction.amount,
+      isPaid: success,
+      isConfirmed: success,
+      paymentError: success ? false : (transaction ? transaction.status : 'error')
     })
 
-    // Send the email
-    await this.act({role:'Engagements',cmd:'sendEmail',email:'confirmed',key,uid,engagement})
+    return true
+  } catch (error) {
+    console.log('GATEWAY TRANSACTION ERROR', error)
+    await this.update(key, {
+      isPaid: false,
+      isConfirmed: false,
+      paymentError: error.type,
+    })
+    return false
+  }
+}
 
-    return {key}
+async function createEngagement(oppKey, profileKey) {
+  const token = await generateClientToken.call(this, profileKey)
+
+  const {key} = await this.push(merge({
+    oppKey,
+    profileKey,
+    isApplied: false,
+    isAccepted: false,
+    isConfirmed: false,
+  }, token))
+
+  return {key}
+}
+
+async function removeEngagement(key:string) {
+  const {assignments} = await this.get({assignments: {engagementKey: key}})
+
+  await removeAssignments.call(this, assignments.map(prop('$key')))
+  await updateShiftCounts.call(this, assignments.map(prop('shiftKey')))
+  await this.remove(key)
+
+  return {key}
+}
+
+
+async function changeOpp(engagement, oppKey) {
+  const {memberships} = await this.get({memberships: {engagementKey: engagement.$key}})
+
+  await Promise.all(
+    concat(
+      [this.act('role:Firebase,model:Engagements,cmd:update', {
+        key: engagement.$key,
+        values: {oppKey}
+      })],
+      memberships.map(({$key}) =>
+        this.act('role:Firebase,model:Memberships,cmd:update', {
+          key: $key,
+          values: {oppKey}
+        })
+      )
+    )
+  )
+
+  return {key: engagement.$key}
+}
+
+async function confirmWithoutPay(uid, key) {
+  const {engagement, opp, commitments} = await this.get({
+    engagement: key,
+    opp: ['engagement', 'oppKey'],
+    commitments: {oppKey: ['engagement', 'oppKey']}
+  })
+
+  assert(engagement, 'Engagement does not exist')
+  assert(opp, 'Opp does not exist')
+
+  const payment = calcPayment(commitments)
+
+  if (payment.payment !== '0.00') {
+    throw new Error(`Cannot no pay, ${payment} due!`)
+  }
+
+  await this.update(key, {
+    isPaid: true,
+    isConfirmed: true,
+  })
+
+  // Send the email
+  await this.act('role:Engagements,cmd:sendEmail,email:confirmed', {key,uid,engagement})
+
+  return {key}
+}
+
+async function payEngagement(key, values) {
+  const {engagement, opp, commitments} = await this.get({
+    engagement: key,
+    opp: ['engagement', 'oppKey'],
+    commitments: {oppKey: ['engagement', 'oppKey']}
+  })
+
+  assert(engagement, 'Engagement does not exist')
+  assert(opp, 'Opp does not exist')
+
+  const payment = calcPayment(commitments)
+  const result = await makePayment.call(this, key, values.paymentNonce, payment)
+
+  if (result) {
+    // Send email
+    await this.act('role:Engagements,cmd:sendEmail,email:confirmed', {key})
+  }
+
+  return {key}
+}
+
+function Engagements() {
+  const seneca = this
+  const act = seneca.act.bind(seneca)
+  const get:(Spec) => Promise<FulfilledSpec> = spec => act('role:Firebase,cmd:get', spec)
+  const Engagements = Model('Engagements')(seneca)
+  const context = merge({act, get}, Engagements)
+
+  this.add({role:'Engagements',cmd:'create'}, async function({oppKey, profileKey}) {
+    return await createEngagement.call(context, oppKey, profileKey)
+  })
+
+  this.add({role:'Engagements',cmd:'remove'}, async function({key}) {
+    return await removeEngagement.call(context, key)
+  })
+
+  this.add('role:Engagements,cmd:changeOpp,public$:false', async function({engagement, oppKey}) {
+    return await changeOpp.call(context, engagement, oppKey)
+  })
+
+  this.add({role:'Engagements',cmd:'update'}, async function({key, values, userRole}) {
+    return await updateEngagement.call(context, key, values, userRole)
+  })
+
+  this.add({role:'Engagements',cmd:'confirmWithoutPay'}, async function({uid, key}) {
+    return await confirmWithoutPay.call(context, uid, key)
   })
 
   this.add({role:'Engagements',cmd:'pay'}, async function({key, values}) {
-    const {engagement, opp, commitments} = await get({
-      engagement: key,
-      opp: ['engagement', 'oppKey'],
-      commitments: {oppKey: ['engagement', 'oppKey']}
-    })
-
-    assert(engagement, 'Engagement does not exist')
-    assert(opp, 'Opp does not exist')
-
-    const payment = calcPayment(commitments)
-    const result = await makePayment(key, values.paymentNonce, payment)
-
-    if (result) {
-      // Send email
-      await this.act('role:Engagements,cmd:sendEmail,email:confirmed', {key})
-    }
-
-    return {key}
+    return await payEngagement.call(context, key, values)
   })
 
   this.add('role:Engagements,cmd:sendEmail,email:accepted', async function({key}) {
     const {engagement, opp} = await get({engagement: key, opp: ['engagement', 'oppKey']})
-
     assert(engagement, 'Engagement not found')
 
     if (opp.confirmationsOn) {

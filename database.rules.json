@@ -34,6 +34,9 @@
         "Organizers": {
           ".indexOn": ["projectKey", "profileKey"]
         },
+        "GatewayCustomers": {
+          ".indexOn": "profileKey"
+        },
         "!queue": {
           "tasks": {
             ".indexOn": "_state",

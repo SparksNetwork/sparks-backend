@@ -1,5 +1,25 @@
+declare interface Profile {
+  $key:string
+  email: string
+  fullName: string
+  intro: string
+  isAdmin: boolean
+  isConfirmed: boolean
+  phone: string
+  portraitUrl: string
+  skills: string
+  uid: string
+  isEAP?: boolean
+}
+
+declare interface GatewayCustomer {
+  $key:string
+  profileKey:string
+  gatewayId:string
+}
 
 declare interface Commitment {
+  $key:string
   code:string
   oppKey:string
   party:string
@@ -10,6 +30,7 @@ declare interface Commitment {
 }
 
 declare interface Engagement {
+  $key:string
   answer:string
   assignmentCount:number
   declined:boolean
@@ -23,4 +44,5 @@ declare interface Engagement {
   paymentError:boolean
   priority:boolean
   profileKey:string
+  gatewayId?:string
 }

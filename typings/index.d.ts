@@ -13,3 +13,4 @@
 /// <reference path="modules/ramda/index.d.ts" />
 /// <reference path="modules/sinon/index.d.ts" />
 /// <reference path="modules/tape/index.d.ts" />
+/// <reference path="braintree-node.d.ts" />

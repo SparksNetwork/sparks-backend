@@ -91,13 +91,13 @@ async function authenticatePattern(seneca, pattern:SenecaPattern):Promise<Seneca
  * @param pattern
  * @returns {any}
  */
-async function actAuthenticated(seneca, pattern:SenecaPattern):Promise<SenecaResponse> {
+async function actAuthenticated(seneca:Seneca, pattern:SenecaPattern):Promise<SenecaResponse> {
   const auth = await authenticatePattern(seneca, pattern)
 
   if (auth.reject) {
     return {reject: auth.reject}
   }
-
+  
   const combinedPattern = merge(pattern, auth)
   return await tryAct(seneca, combinedPattern)
 }

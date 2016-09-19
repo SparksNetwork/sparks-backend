@@ -54,8 +54,8 @@
   },
   "dependencies": {
     "bluebird": "^3.4.6",
-    "braintree": "^1.37.1",
-    "braintree-node": "^1.0.9",
+    "braintree": "^1.41.0",
+    "braintree-node": "^1.1.1",
     "express": "^4.13.4",
     "firebase": "^2.4.1",
     "firebase-queue": "^1.2.1",
