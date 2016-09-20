@@ -2,8 +2,7 @@ import * as FirebaseQueue from 'firebase-queue'
 import {when, compose, equals, keys, prop, merge, type, identity} from 'ramda'
 import {pushMetric} from './metrics'
 import {test} from "./test/test";
-
-const log = console.log.bind(console)
+import {error, debug} from "./log";
 
 /**
  * If the given argument is an object with a single property called 'key'
@@ -92,12 +91,14 @@ async function authenticatePattern(seneca, pattern:SenecaPattern):Promise<Seneca
  * @returns {any}
  */
 async function actAuthenticated(seneca:Seneca, pattern:SenecaPattern):Promise<SenecaResponse> {
+  debug('authenticating', pattern)
   const auth = await authenticatePattern(seneca, pattern)
 
   if (auth.reject) {
     return {reject: auth.reject}
   }
-  
+
+  debug('executing', pattern)
   const combinedPattern = merge(pattern, auth)
   return await tryAct(seneca, combinedPattern)
 }
@@ -115,84 +116,12 @@ function createHandler(seneca) {
     const taskResponse = await actAuthenticated(seneca, pattern)
 
     if (taskResponse.error || taskResponse.reject) {
-      log('queue error', pattern, taskResponse)
+      error('queue error', pattern, taskResponse)
     }
 
     return taskResponse
   }
 }
-
-function createRecorder(ref:Firebase, tag:string) {
-  return async function record(data) {
-    pushMetric(ref, tag)
-    return data
-  }
-}
-
-/**
- * Generate a function that generates an async function that writes the payload
- * response data back into firebase.
- *
- * @param ref
- * @returns {({domain, action, uid}:{domain: any, action: any, uid: any})=>
- *   (response:SenecaResponse)=>Promise<SenecaResponse>}
- */
-function createResponder(ref:Firebase) {
-  return function(data) {
-    return async function (response: SenecaResponse): Promise<SenecaResponse> {
-      const {_id, domain, action, uid} = data
-      const responsePayload = buildResponse(domain, action, objectOrKey(response))
-      await ref.child(uid).child(_id).set(responsePayload)
-      return response
-    }
-  }
-}
-
-/**
-* Process the firebase queue and turn messages there into seneca tasks.
-*/
-export function startDispatch(ref:Firebase, seneca) {
-  const responsesRef = ref.child('responses')
-  const metricsRef = ref.child('metrics')
-
-  const handle = createHandler(seneca)
-  const responder = createResponder(responsesRef)
-  const recordIncoming = createRecorder(metricsRef, 'queue-incoming')
-  const recordResponse = createRecorder(metricsRef, 'queue-response')
-  const recordError = createRecorder(metricsRef, 'queue-error')
-
-  return new FirebaseQueue(ref, {sanitize: false}, function(data, progress, resolve, reject) {
-    recordIncoming(data)
-      .catch(identity)
-      .then(handle)
-      .then(responder(data))
-      .then(recordResponse)
-      .then(resolve)
-      .catch(error =>
-        recordError({error: error.toString()})
-          .then(err => console.error(err) || err)
-          .then(() => reject(error)))
-  })
-}
-
-test(__filename, 'createRecorder', async function(t) {
-  const spy = require('sinon').spy
-  const data = {some: 'data'}
-  const timestamp = Date.now()
-  const ref = {} as Firebase
-  const pushSpy = spy()
-  ref.push = pushSpy
-  const recorder = createRecorder(ref, 'my tag')
-
-  const response = await recorder(data)
-  const pushArgs = pushSpy.getCall(0).args[0]
-
-  t.equals(response, data)
-  t.equals(pushSpy.callCount, 1)
-  t.equals(pushArgs.tag, 'my tag')
-  t.ok(pushArgs.timestamp >= timestamp)
-})
-
 test(__filename, 'createHandler', async function (t) {
   const spy = require('sinon').spy
   const data = {
@@ -223,6 +152,48 @@ test(__filename, 'createHandler', async function (t) {
   t.deepEquals(response, {pass: 'on'})
 })
 
+function createRecorder(ref:Firebase, tag:string) {
+  return async function record(data) {
+    pushMetric(ref, tag)
+    return data
+  }
+}
+test(__filename, 'createRecorder', async function(t) {
+  const spy = require('sinon').spy
+  const data = {some: 'data'}
+  const timestamp = Date.now()
+  const ref = {} as Firebase
+  const pushSpy = spy()
+  ref.push = pushSpy
+  const recorder = createRecorder(ref, 'my tag')
+
+  const response = await recorder(data)
+  const pushArgs = pushSpy.getCall(0).args[0]
+
+  t.equals(response, data)
+  t.equals(pushSpy.callCount, 1)
+  t.equals(pushArgs.tag, 'my tag')
+  t.ok(pushArgs.timestamp >= timestamp)
+})
+
+/**
+ * Generate a function that generates an async function that writes the payload
+ * response data back into firebase.
+ *
+ * @param ref
+ * @returns {({domain, action, uid}:{domain: any, action: any, uid: any})=>
+ *   (response:SenecaResponse)=>Promise<SenecaResponse>}
+ */
+function createResponder(ref:Firebase) {
+  return function(data) {
+    return async function (response: SenecaResponse): Promise<SenecaResponse> {
+      const {_id, domain, action, uid} = data
+      const responsePayload = buildResponse(domain, action, objectOrKey(response))
+      await ref.child(uid).child(_id).set(responsePayload)
+      return response
+    }
+  }
+}
 test(__filename, 'createResponder', async function (t) {
   const spy = require('sinon').spy
   const data = {domain: 'test', action: 'createResponderTest', uid: 'abc123', _id: '123abc'}
@@ -250,3 +221,30 @@ test(__filename, 'createResponder', async function (t) {
     payload: {some: 'data'}
   }])
 })
+
+/**
+* Process the firebase queue and turn messages there into seneca tasks.
+*/
+export function startDispatch(ref:Firebase, seneca) {
+  const responsesRef = ref.child('responses')
+  const metricsRef = ref.child('metrics')
+
+  const handle = createHandler(seneca)
+  const responder = createResponder(responsesRef)
+  const recordIncoming = createRecorder(metricsRef, 'queue-incoming')
+  const recordResponse = createRecorder(metricsRef, 'queue-response')
+  const recordError = createRecorder(metricsRef, 'queue-error')
+
+  return new FirebaseQueue(ref, {sanitize: false}, function(data, progress, resolve, reject) {
+    recordIncoming(data)
+      .catch(identity)
+      .then(handle)
+      .then(responder(data))
+      .then(recordResponse)
+      .then(resolve)
+      .catch(err =>
+        recordError({error: err.toString()})
+          .then(err => error(err) || err)
+          .then(() => reject(err)))
+  })
+}

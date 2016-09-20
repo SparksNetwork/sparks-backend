@@ -130,6 +130,13 @@ function mockFirebase() {
     store = R.dissocPath(path, store)
     return {key}
   })
+
+  this.add('role:Firebase,cmd:inc', async function({model, key, child, by}) {
+    const lens = lensPath([model.toLowerCase(), key, child])
+    const value = R.view(lens, store) || 0
+    store = R.set(lens, value + (by || 1), store)
+    return {key}
+  })
 }
 
 export default mockFirebase

@@ -61,6 +61,12 @@ export default function(fb) {
     return await fb.child(model).child(key).remove()
   })
 
+  this.add('role:Firebase,cmd:inc', async function({model, key, child, by}) {
+    return await fb.child(model).child(key).child(child).transaction(currentData => {
+      return (currentData || 0) + (by || 1)
+    })
+  })
+
   this.add({role:'Firebase',model:'Users',cmd:'set'}, async function({uid, profileKey}) {
     return await fb.child('Users').child(uid).set(profileKey)
   })

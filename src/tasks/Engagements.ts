@@ -9,9 +9,10 @@ import {
   SubscriptionOptions,
   SubscriptionAddOn,
   Customer
-} from "../../typings/braintree-node";
+} from "../../typings/braintree";
 import {create} from "domain";
 import {Test} from "tape-async";
+import {debug, error} from "../log";
 
 const SPARKS_RATE = 0.035
 const SPARKS_MIN = 1.0
@@ -90,7 +91,7 @@ function calcPayable(payment:number, deposit:number):string {
   return (payment + calcSparks(payment, deposit)).toFixed(2)
 }
 test(__filename, 'calcPayable', async function(t) {
-  t.equal(calcPayable(0, 0), '0.00', '0 + 0 = 0')
+  t.equal(calcPayable(0, 0), '0.00', '0 + 0 = 0.00')
   t.equal(calcPayable(1, 0), '2.04', '1 + 0 = 2.04')
   t.equal(calcPayable(1, 1), '2.07', '1 + 1 = 2.07')
   t.equal(calcPayable(0, 1), '1.03', '0 + 1 = 1.03')
@@ -132,11 +133,11 @@ test(__filename, 'calcPayment', async function(t) {
 
 async function generateClientToken(profileKey:string):Promise<{paymentClientToken:string, gatewayId:string}> {
   const gatewayCustomer: Customer = await this.act('role:GatewayCustomers,cmd:get', {profileKey})
-  const {clientToken} = await this.act('role:gateway,cmd:generateClientToken', {
+  const response = await this.act('role:gateway,cmd:generateClientToken', {
     options: {customerId: gatewayCustomer.id}
   })
   return {
-    paymentClientToken: clientToken,
+    paymentClientToken: response.clientToken,
     gatewayId: gatewayCustomer.id
   }
 }
@@ -161,7 +162,7 @@ async function ensureEngagementHasToken(key:string) {
   const {engagement} = await this.act('role:Firebase,cmd:get', {engagement:key})
   if (engagement.gatewayId) { return }
   const token = await generateClientToken.call(this, engagement.profileKey)
-  await this.act('role:Firebase,model:Engagements,cmd:update', {values: token})
+  await this.update(engagement.$key, token)
 }
 test(__filename, 'ensureEngagementHasToken', async function(t:Test) {
   const spy = require('sinon').spy
@@ -170,12 +171,14 @@ test(__filename, 'ensureEngagementHasToken', async function(t:Test) {
   const context:any = {}
 
   context.act = spy(async function() { return {engagement: engWithGatewayId} })
+  context.update = spy()
   await ensureEngagementHasToken.call(context, 'abc123')
-  t.equal(context.act.callCount, 1, 'early exit')
+  t.equal(context.update.callCount, 0, 'early exit')
 
   context.act = spy(async function() { return {engagement: engWithoutGatewayId} })
   await ensureEngagementHasToken.call(context, 'abc123')
-  t.equal(context.act.callCount, 4, 'all the acts')
+  t.equal(context.act.callCount, 3, 'all the acts')
+  t.equal(context.update.callCount, 1, 'updates the engagement')
 })
 
 async function canChangeOpp(engagement, oppKey, userRole) {
@@ -249,7 +252,9 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
       }
     }
 
+    debug('creating subscription', options)
     const {success, subscription} = await this.act('role:gateway,cmd:createSubscription', {options})
+    debug('subscription response', success, subscription)
     const transaction = subscription.transactions[0]
 
     await this.update(key, {
@@ -262,12 +267,12 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
     })
 
     return true
-  } catch (error) {
-    console.log('GATEWAY TRANSACTION ERROR', error)
+  } catch (err) {
+    error('GATEWAY TRANSACTION ERROR', err)
     await this.update(key, {
       isPaid: false,
       isConfirmed: false,
-      paymentError: error.type,
+      paymentError: err.type,
     })
     return false
   }
@@ -347,6 +352,8 @@ async function confirmWithoutPay(uid, key) {
 }
 
 async function payEngagement(key, values) {
+  debug('payEngagement', key, values)
+
   const {engagement, opp, commitments} = await this.get({
     engagement: key,
     opp: ['engagement', 'oppKey'],
@@ -438,9 +445,9 @@ function Engagements() {
   })
 
   this.add({role:'Engagements',cmd:'updateAssignmentCount'}, async function({key, by}) {
-    const {model} = await this.act('role:Firebase,cmd:Model,model:Engagements')
-    const ref = model.child(key).child('assignmentCount')
-    await ref.transaction(count => (count || 0) + by)
+    await this.act('role:Firebase,cmd:inc,model:Engagements,child:assignmentCount', {
+      key, by
+    })
     return {key}
   })
 }
