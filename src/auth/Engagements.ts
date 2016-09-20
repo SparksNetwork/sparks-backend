@@ -12,7 +12,6 @@ export default function() {
     return {opp}
   })
 
-  // Engagements
   this.add('role:Auth,model:Engagements', async function({uid, key, cmd}) {
     const {profile, engagement, opp} = await this.act('role:Firebase,cmd:get', {
       profile: {uid},
@@ -32,6 +31,14 @@ export default function() {
       return await this.act('role:Auth,model:Projects,cmd:update', {uid, key: opp.projectKey})
     }
 
+    return {reject: 'Not authorized to modify engagement'}
+  })
+
+  this.add('role:Auth,model:Engagements,cmd:reclaim', async function({uid}):Promise<any> {
+    const {profile} = await this.act('role:Firebase,cmd:get', {profile: {uid}})
+    if(profile.isAdmin) {
+      return {profile, userRole: 'admin'}
+    }
     return {reject: 'Not authorized to modify engagement'}
   })
 

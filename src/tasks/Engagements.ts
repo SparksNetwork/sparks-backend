@@ -6,9 +6,9 @@ import {Model} from '../firebase/firebase-sn'
 import defaults from './defaults'
 import {test} from "../test/test";
 import {
-  SubscriptionOptions,
+  SubscriptionCreateOptions,
   SubscriptionAddOn,
-  Customer
+  Customer, SubscriptionAddOnOptions, SubscriptionUpdateOptions, Subscription
 } from "../../typings/braintree";
 import {create} from "domain";
 import {Test} from "tape-async";
@@ -262,14 +262,14 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
       inheritedFromId: 'payment'
     }
 
-    const options:SubscriptionOptions = {
+    const options:SubscriptionCreateOptions = {
       options: {
         startImmediately: true,
         doNotInheritAddOnsOrDiscounts: true
       },
       neverExpires: true,
       paymentMethodNonce: nonce,
-      planId: 'event-deposit',
+      planId: 'event',
       price: '0.00',
       addOns: {
         add: [paymentAddon]
@@ -285,13 +285,15 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
       amountPaid: transaction.amount,
       depositAmount: payment.deposit,
       isPaid: success,
-      isConfirmed: success,
-      payment: {
-        amountPaid: transaction.amount,
-        subscriptionId: subscription.id,
-        paymentTransactionId: transaction.id,
-        paymentError: success ? false : (transaction ? transaction.status : 'error')
-      }
+      isConfirmed: success
+    })
+
+    await this.child(key).update('payment', {
+      amountPaid: transaction.amount,
+      paidAt: Date.now(),
+      subscriptionId: subscription.id,
+      transactionId: transaction.id,
+      paymentError: success ? false : (transaction ? transaction.status : 'error')
     })
 
     return true
@@ -370,8 +372,13 @@ async function confirmWithoutPay(uid, key) {
   }
 
   await this.update(key, {
+    amountPaid: '0.00',
     isPaid: true,
     isConfirmed: true,
+  })
+  await this.child(key).update('payment', {
+    amountPaid: '0.00',
+    paidAt: Date.now()
   })
 
   // Send the email
@@ -398,6 +405,57 @@ async function payEngagement(key, values) {
   if (result) {
     // Send email
     await this.act('role:Engagements,cmd:sendEmail,email:confirmed', {key})
+  }
+
+  return {key}
+}
+
+async function reclaimEngagement(key:string) {
+  const {engagement} = await this.get({engagement: key})
+  assert(engagement, 'Engagement does not exist')
+  assert(!engagement.isDepositPaid, 'Deposit already paid')
+
+  const {payment, depositAmount} = engagement
+  assert(payment, 'Engagement is not paid')
+  assert(payment.subscriptionId, 'No subscription found')
+  assert(depositAmount, 'No deposit amount found')
+
+  // Return if the deposit amount is < $1
+  if (extractAmount(depositAmount) === 0) { return {key} }
+
+  const depositAddOn:SubscriptionAddOn = {
+    amount: depositAmount,
+    inheritedFromId: 'deposit'
+  }
+
+  const options:SubscriptionUpdateOptions = {
+    addOns: {
+      add: [depositAddOn]
+    }
+  }
+
+  const response = await this.act('role:gateway,cmd:updateSubscription', {
+    id: payment.subscriptionId,
+    options
+  })
+  debug('retain, braintree response', response)
+
+  const subscription:Subscription = response.subscription
+
+  if (response.success) {
+    await this.update(key, {
+      isDepositPaid: true,
+      deposit: {
+        billingDate: subscription.nextBillingDate
+      }
+    })
+  } else {
+    await this.update(key, {
+      isDepositPaid: false,
+      deposit: {
+        paymentError: response.message || 'unknown'
+      }
+    })
   }
 
   return {key}
@@ -432,6 +490,10 @@ function Engagements() {
 
   this.add({role:'Engagements',cmd:'pay'}, async function({key, values}) {
     return await payEngagement.call(context, key, values)
+  })
+
+  this.add('role:Engagements,cmd:reclaim', async function({key}) {
+    return await reclaimEngagement.call(context, key)
   })
 
   this.add('role:Engagements,cmd:sendEmail,email:accepted', async function({key}) {

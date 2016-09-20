@@ -226,17 +226,29 @@ export interface SubscriptionOptions {
   merchantAccountId?:string
   neverExpires?:boolean
   numberOfBillingCycles?:number
-  options: {
-    doNotInheritAddOnsOrDiscounts:boolean
-    startImmediately:boolean
-  }
   paymentMethodNonce?:string
   paymentMethodToken?:string
-  planId:string
   price?:string
   trialDuration?:number
   trialDurationUnit?:string
   trialPeriod?:boolean
+}
+
+export interface SubscriptionCreateOptions extends SubscriptionOptions {
+  planId:string
+  options?: {
+    doNotInheritAddOnsOrDiscounts?:boolean
+    startImmediately?:boolean
+  }
+}
+
+export interface SubscriptionUpdateOptions extends SubscriptionOptions {
+  options?: {
+    prorateCharges?:boolean
+    replaceAllAddOnsAndDiscounts?:boolean
+    revertSubscriptionOnProrationFailure?:boolean
+  }
+  planId?:string
 }
 
 export interface Descriptor {
@@ -304,11 +316,11 @@ export type ResponseCallback<T> = (err:any, response:T) => void
 
 interface SubscriptionApi {
   cancel(id:string, callback:ResponseCallback<SubscriptionResponse>):void
-  create(options:SubscriptionOptions, callback:ResponseCallback<SubscriptionResponse>):void
+  create(options:SubscriptionCreateOptions, callback:ResponseCallback<SubscriptionResponse>):void
   find(id:string, callback:ResponseCallback<SubscriptionResponse>)
   retryCharge(id:string, amount:string, callback:ResponseCallback<TransactionResponse>):void
   search(options:any, callback:ResponseCallback<Subscription[]>):void
-  update(id:string, options:SubscriptionOptions, callback:ResponseCallback<SubscriptionResponse>):void
+  update(id:string, options:SubscriptionUpdateOptions, callback:ResponseCallback<SubscriptionResponse>):void
 }
 
 interface CustomerApi {

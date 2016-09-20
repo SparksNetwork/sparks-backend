@@ -1,6 +1,6 @@
 import {
   CustomerOptions, CustomerResponse, Response,
-  TransactionOptions, ClientTokenOptions, SubscriptionOptions,
+  TransactionOptions, ClientTokenOptions, SubscriptionCreateOptions,
   SubscriptionResponse, ClientTokenResponse, TransactionResponse, GatewayOptions
 } from "./braintree";
 
@@ -15,7 +15,7 @@ export interface Gateway {
   createTransaction(options:TransactionOptions):Promise<TransactionResponse>
   cloneTransaction(id:string, amount:string, submitForSettlement?:boolean):Promise<Response>
   generateClientToken(options?:ClientTokenOptions):Promise<ClientTokenResponse>
-  createSubscription(options:SubscriptionOptions):Promise<SubscriptionResponse>
+  createSubscription(options:SubscriptionCreateOptions):Promise<SubscriptionResponse>
   findSubscription(id:string):Promise<SubscriptionResponse>
   cancelSubscription(id:string):Promise<Response>
 }

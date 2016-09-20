@@ -2,7 +2,14 @@ import {Gateway, GatewayOptions} from "../typings/braintree";
 const braintree = require('braintree')
 
 export default function(cfg) {
-  let gateway:Gateway
+  const options:GatewayOptions = {
+    environment: braintree.Environment[cfg.BT_ENVIRONMENT],
+    merchantId: cfg.BT_MERCHANT_ID,
+    publicKey: cfg.BT_PUBLIC_KEY,
+    privateKey: cfg.BT_PRIVATE_KEY,
+  }
+
+  const gateway = braintree.connect(options)
 
   this.add('role:gateway', async function(msg) {
     return await gateway[msg.cmd](msg.options)
@@ -40,6 +47,10 @@ export default function(cfg) {
     gateway.subscription.find(id, done)
   })
 
+  this.add('role:gateway,cmd:updateSubscription', function({id, options}, done) {
+    gateway.subscription.update(id, options, done)
+  })
+
   this.add('role:gateway,cmd:cancelSubscription', function({id}, done) {
     gateway.subscription.cancel(id, done)
   })
@@ -48,17 +59,6 @@ export default function(cfg) {
     const result = await this.prior(msg)
     console.log('[braintree]', result.success, result)
     return result
-  })
-
-  this.add('init:braintree', function() {
-    const options:GatewayOptions = {
-      environment: braintree.Environment[cfg.BT_ENVIRONMENT],
-      merchantId: cfg.BT_MERCHANT_ID,
-      publicKey: cfg.BT_PUBLIC_KEY,
-      privateKey: cfg.BT_PRIVATE_KEY,
-    }
-
-    gateway = braintree.connect(options)
   })
 
   return 'braintree'

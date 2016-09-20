@@ -46,6 +46,14 @@ declare interface Engagement {
     transactionId?:string
     subscriptionId?:string
     error?:boolean
+    amountPaid?:string
+    paidAt?:number
+  }
+  depositAmount?:string
+  isDepositPaid?:boolean
+  deposit?: {
+    billingDate?:string
+    paymentError?:string
   }
   paymentClientToken?:string // deprecated
   paymentError?:boolean // deprecated
