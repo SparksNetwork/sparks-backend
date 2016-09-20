@@ -40,9 +40,15 @@ declare interface Engagement {
   isConfirmed:boolean
   isPaid:boolean
   oppKey:string
-  paymentClientToken:string
-  paymentError:boolean
+  payment: {
+    clientToken:string
+    gatewayId:string
+    transactionId?:string
+    subscriptionId?:string
+    error?:boolean
+  }
+  paymentClientToken?:string // deprecated
+  paymentError?:boolean // deprecated
   priority:boolean
   profileKey:string
-  gatewayId?:string
 }

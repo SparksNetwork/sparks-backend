@@ -131,13 +131,13 @@ test(__filename, 'calcPayment', async function(t) {
   t.deepEqual(calcPayment([com2p, com2d]), {payment: '37.30', deposit: '150.00'})
 })
 
-async function generateClientToken(profileKey:string):Promise<{paymentClientToken:string, gatewayId:string}> {
-  const gatewayCustomer: Customer = await this.act('role:GatewayCustomers,cmd:get', {profileKey})
+async function generateClientToken(profileKey:string):Promise<{clientToken:string, gatewayId:string}> {
+  const gatewayCustomer:Customer = await this.act('role:GatewayCustomers,cmd:get', {profileKey})
   const response = await this.act('role:gateway,cmd:generateClientToken', {
     options: {customerId: gatewayCustomer.id}
   })
   return {
-    paymentClientToken: response.clientToken,
+    clientToken: response.clientToken,
     gatewayId: gatewayCustomer.id
   }
 }
@@ -159,26 +159,50 @@ async function updateShiftCounts(keys:string[]) {
 }
 
 async function ensureEngagementHasToken(key:string) {
-  const {engagement} = await this.act('role:Firebase,cmd:get', {engagement:key})
-  if (engagement.gatewayId) { return }
+  const {engagement} = await this.get({engagement:key})
+  if (engagement.payment) { return }
+  if (engagement.isPaid) { return }
   const token = await generateClientToken.call(this, engagement.profileKey)
-  await this.update(engagement.$key, token)
+  await this.child(key).update('payment', token)
 }
 test(__filename, 'ensureEngagementHasToken', async function(t:Test) {
   const spy = require('sinon').spy
-  const engWithGatewayId = {gatewayId: 'abc123'}
+  const engWithGatewayId = {payment: {gatewayId: 'abc123'}}
+  const engIsPaid = {isPaid: true}
   const engWithoutGatewayId = {profileKey: 'dec234'}
   const context:any = {}
+  const updater = {update: spy()}
 
-  context.act = spy(async function() { return {engagement: engWithGatewayId} })
+  context.get = () => Promise.resolve({engagement: engWithGatewayId})
+  context.act = spy(() => Promise.resolve({}))
+  context.child = spy(() => updater)
+  await ensureEngagementHasToken.call(context, 'abc123')
+  t.equal(context.child.callCount, 0, 'early exit')
+
+  context.get = () => Promise.resolve({engagement: engIsPaid})
+  context.act = spy()
   context.update = spy()
   await ensureEngagementHasToken.call(context, 'abc123')
-  t.equal(context.update.callCount, 0, 'early exit')
+  t.equal(context.child.callCount, 0, 'early exit')
 
-  context.act = spy(async function() { return {engagement: engWithoutGatewayId} })
+  context.get = () => Promise.resolve({engagement: engWithoutGatewayId})
+  context.act = spy(async function(cmr):Promise<any> {
+    switch(cmr) {
+      case 'role:GatewayCustomers,cmd:get':
+        return {id: 'gwid'}
+      case 'role:gateway,cmd:generateClientToken':
+        return {clientToken: 'cli'}
+    }
+  })
   await ensureEngagementHasToken.call(context, 'abc123')
-  t.equal(context.act.callCount, 3, 'all the acts')
-  t.equal(context.update.callCount, 1, 'updates the engagement')
+  t.equal(context.act.callCount, 2, 'all the acts')
+  t.equal(context.child.getCall(0).args[0], 'abc123')
+  t.equal(updater.update.callCount, 1, 'updates the engagement')
+  t.equal(updater.update.getCall(0).args[0], 'payment')
+  t.deepEqual(updater.update.getCall(0).args[1], {
+    clientToken: 'cli',
+    gatewayId: 'gwid'
+  })
 })
 
 async function canChangeOpp(engagement, oppKey, userRole) {
@@ -258,12 +282,16 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
     const transaction = subscription.transactions[0]
 
     await this.update(key, {
-      subscriptionId: subscription.id,
-      paymentTransactionId: transaction.id,
       amountPaid: transaction.amount,
+      depositAmount: payment.deposit,
       isPaid: success,
       isConfirmed: success,
-      paymentError: success ? false : (transaction ? transaction.status : 'error')
+      payment: {
+        amountPaid: transaction.amount,
+        subscriptionId: subscription.id,
+        paymentTransactionId: transaction.id,
+        paymentError: success ? false : (transaction ? transaction.status : 'error')
+      }
     })
 
     return true
@@ -281,13 +309,14 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
 async function createEngagement(oppKey, profileKey) {
   const token = await generateClientToken.call(this, profileKey)
 
-  const {key} = await this.push(merge({
+  const {key} = await this.push({
     oppKey,
     profileKey,
     isApplied: false,
     isAccepted: false,
     isConfirmed: false,
-  }, token))
+    payment: token
+  })
 
   return {key}
 }
@@ -379,7 +408,7 @@ function Engagements() {
   const act = seneca.act.bind(seneca)
   const get:(Spec) => Promise<FulfilledSpec> = spec => act('role:Firebase,cmd:get', spec)
   const Engagements = Model('Engagements')(seneca)
-  const context = merge({act, get}, Engagements)
+  const context = Object.assign(Engagements, {act, get})
 
   this.add({role:'Engagements',cmd:'create'}, async function({oppKey, profileKey}) {
     return await createEngagement.call(context, oppKey, profileKey)

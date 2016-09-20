@@ -6,6 +6,15 @@ function braintree() {
   this.add('role:gateway,cmd:generateClientToken', async function() {
     return {clientToken: 'paymenowyoubastard'}
   })
+  this.add('role:gateway,cmd:createCustomer', async function({options}) {
+    return {success: true, customer: {id: 'gateway123'}}
+  })
+  this.add('role:gateway,cmd:findCustomer', async function({id}) {
+    return {id: 'gateway123'}
+  })
+  this.add('role:gateway,cmd:updateCustomer', async function({id, update}) {
+    return {success:true, customer: {id}}
+  })
 
   return 'braintree'
 }
@@ -29,7 +38,13 @@ function shifts() {
   return 'shifts'
 }
 
-const tapeTest = tape('Engagements', [email, braintree, shifts, Engagements])
+function gatewayCustomers() {
+  this.add('role:GatewayCustomers,cmd:get', async function() {
+    return {id: 'gatewayId'}
+  })
+}
+
+const tapeTest = tape('Engagements', [email, braintree, gatewayCustomers, shifts, Engagements])
 function testFn(...args) {
   emailsSent = []
   tapeTest(...args)
@@ -53,7 +68,10 @@ test('create', async function(t) {
   t.equal(eng.profileKey, 'volTwo', 'profileKey')
   t.equal(eng.isAccepted, false, 'isAccepted is false')
   t.equal(eng.isConfirmed, false, 'isConfirmed is false')
-  t.equal(eng.paymentClientToken, 'paymenowyoubastard', 'generated payment client token')
+  t.deepEqual(eng.payment, {
+    clientToken: 'paymenowyoubastard',
+    gatewayId: 'gatewayId'
+  }, 'generated payment client token')
 
   // t.equal(emailsSent.length, 1)
   // const email = emailsSent[0] as any
@@ -92,7 +110,10 @@ test('update / volunteer', async function(t) {
     isConfirmed: true,
     amountPaid: 5000,
     isPaid: true,
-    paymentClientToken: 'dontbeafool',
+    payment: {
+      clientToken: 'dontbeafool',
+      gatewayId: 'abc123'
+    },
   }})
 
   t.ok(response.key)
@@ -106,7 +127,7 @@ test('update / volunteer', async function(t) {
   t.equal(eng.isConfirmed, false, 'cannot confirm themself')
   t.notOk(eng.amountPaid, 'cannot set paid amount')
   t.notOk(eng.isPaid, 'cannot mark isPaid')
-  t.equal(eng.paymentClientToken, 'imaprettyboy', 'cannot change payment token')
+  t.equal(eng.payment.clientToken, 'imaprettyboy', 'cannot change payment token')
 })
 
 test('update / project owner', async function(t) {
@@ -118,7 +139,10 @@ test('update / project owner', async function(t) {
     isConfirmed: true,
     amountPaid: 5000,
     isPaid: true,
-    paymentClientToken: 'dontbeafool',
+    payment: {
+      clientToken: 'dontbeafool',
+      gatewayId: 'abc123'
+    }
   }})
 
   t.ok(response.key)
@@ -132,7 +156,7 @@ test('update / project owner', async function(t) {
   t.equal(eng.isConfirmed, false, 'cannot confirm manually')
   t.notOk(eng.amountPaid, 'cannot set paid amount')
   t.notOk(eng.isPaid, 'cannot mark isPaid')
-  t.equal(eng.paymentClientToken, 'imaprettyboy', 'cannot change payment token')
+  t.equal(eng.payment.clientToken, 'imaprettyboy', 'cannot change payment token')
 })
 
 {
