@@ -1,3 +1,17 @@
+<a name="1.0.29"></a>
+## [1.0.29](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.28...v1.0.29) (2016-09-21)
+
+
+### Features
+
+* **Build:** Add sourcemap support ([116b33a](https://github.com/SparksNetwork/sparks-backend/commit/116b33a))
+* **Engagements:** Add reclaim command for engagements ([6b793de](https://github.com/SparksNetwork/sparks-backend/commit/6b793de))
+* **Engagements:** Bill using a braintree subscription instead of transaction ([cd9c645](https://github.com/SparksNetwork/sparks-backend/commit/cd9c645))
+* **Engagements:** Create a subscription instead of a transaction ([0862aee](https://github.com/SparksNetwork/sparks-backend/commit/0862aee))
+* **Engagements:** Move the payment data into an object under Engagement ([e993f6b](https://github.com/SparksNetwork/sparks-backend/commit/e993f6b))
+
+
+
 <a name="1.0.28"></a>
 ## [1.0.28](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.27...v1.0.28) (2016-09-18)
 
