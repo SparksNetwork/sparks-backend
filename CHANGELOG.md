@@ -1,3 +1,13 @@
+<a name="1.0.30"></a>
+## [1.0.30](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.29...v1.0.30) (2016-09-21)
+
+
+### Bug Fixes
+
+* **GatewayCustomers:** context assignment needs to happen to the model ([fbb8675](https://github.com/SparksNetwork/sparks-backend/commit/fbb8675))
+
+
+
 <a name="1.0.29"></a>
 ## [1.0.29](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.28...v1.0.29) (2016-09-21)
 
