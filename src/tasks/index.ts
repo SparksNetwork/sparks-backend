@@ -13,6 +13,7 @@ import Shifts from './Shifts'
 import TeamImages from './TeamImages'
 import Teams from './Teams'
 import Users from './Users'
+import GatewayCustomers from "./GatewayCustomers";
 
 export default function(options) {
   const seneca = this
@@ -31,6 +32,7 @@ export default function(options) {
   seneca.use(TeamImages, options)
   seneca.use(Teams, options)
   seneca.use(Users, options)
+  seneca.use(GatewayCustomers, options)
 
   return 'sn-tasks'
 }

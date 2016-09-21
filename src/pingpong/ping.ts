@@ -16,7 +16,7 @@ export function startPing(queueRef:Firebase) {
 
     return new Promise<boolean>(function(resolve, reject) {
       waits[key] = resolve
-      setTimeout(() => reject('timeout'), 5000)
+      setTimeout(() => reject('timeout'), 15000)
     })
   }
 
@@ -29,7 +29,7 @@ export function startPing(queueRef:Firebase) {
         console.error('ping sent, no reply', err)
       })
       .then(() => {
-        setTimeout(pingPong, 5000)
+        setTimeout(pingPong, 15000)
       })
   }
 

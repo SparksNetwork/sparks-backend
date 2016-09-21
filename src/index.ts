@@ -1,3 +1,6 @@
+try {
+  require("source-map-support").install()
+} catch (err) {}
 import * as express from 'express'
 import * as Seneca from 'seneca-await'
 import {firebase} from './firebase/process-firebase'
