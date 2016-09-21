@@ -125,7 +125,7 @@ function GatewayCustomers() {
   const Profiles = Model('Profiles')(this)
   const model = Model('GatewayCustomers')(this)
   const get = spec => act('role:Firebase,cmd:get', spec)
-  const context = merge({act, get}, model)
+  const context = Object.assign(model, {act, get})
 
   this.add('role:GatewayCustomers,cmd:get', async function({profileKey}) {
     return await getOrCreateGatewayCustomer.call(context, profileKey)
