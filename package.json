@@ -11,6 +11,7 @@
     "build": "tsc && babel -d dist dist",
     "test": "bin/test",
     "testci": "tsc && parallel --no-notice -j4 \"node --no-warnings {} 2>/dev/null | tap-xunit 1> ${$CIRCLE_TEST_REPORTS}/{#}.xml\" ::: dist/**/*.js",
+    "watch": "fswatch -0 -Ei \".*\\.ts$\" -Ee \".*\\.ts\" src | xargs -0 -n1 -I {} bash -c \"clear && ts-node {} | tap-min\"",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",
     "version": "npm run changelog",
