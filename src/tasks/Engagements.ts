@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import {
-  compose, concat, map, pick, prop, sum, propOr, curry, add, multiply, merge
+  compose, concat, map, pick, prop, sum, propOr, curry, add, multiply, propEq, find
 } from 'ramda'
 import {Model, Updater} from '../firebase/firebase-sn'
 import defaults from './defaults'
@@ -314,6 +314,12 @@ async function makePayment(this:Context, key:string, nonce:string, payment:Payme
 }
 
 async function createEngagement(this:Context, oppKey, profileKey) {
+  // Check to make sure the engagement is unique
+  const {engagements} = await this.get({engagements: {profileKey}})
+  const engagement = find(propEq('oppKey', oppKey), engagements)
+  if (engagement) { return {key: engagement.key} }
+
+  // Get the payment token from braintree
   const token = await generateClientToken.call(this, profileKey)
 
   const {key} = await this.push({
@@ -327,6 +333,44 @@ async function createEngagement(this:Context, oppKey, profileKey) {
 
   return {key}
 }
+test(__filename, 'createEngagement', async function(t:Test) {
+  const spy = require('sinon').spy
+  const context = {} as any
+
+  context.get = spy(() => Promise.resolve({engagements: []}))
+  context.act = spy(() => Promise.resolve({id: '1', clientToken: 'token'}))
+  context.push = spy(() => Promise.resolve({key: 'created'}))
+  t.deepEqual(
+    await createEngagement.call(context, 'abc123', '123abc'),
+    {key: 'created'}
+  )
+  t.equal(context.push.callCount, 1)
+  t.deepEqual(context.push.getCall(0).args[0], {
+    oppKey: 'abc123',
+    profileKey: '123abc',
+    isApplied: false,
+    isAccepted: false,
+    isConfirmed: false,
+    payment: {
+      clientToken: 'token',
+      gatewayId: '1'
+    }
+  })
+
+  // Engagement already exists
+  context.get = spy(() => Promise.resolve({engagements: [{key: '234bde', oppKey: 'abc123'}]}))
+  context.push = spy()
+  context.act = spy()
+  await createEngagement.call(context, 'abc123', '123abc')
+  t.equal(context.push.callCount, 0)
+
+  // Unequal engagement exists
+  context.get = spy(() => Promise.resolve({engagements: [{key: '234bde', oppKey: 'dce123'}]}))
+  context.act = spy(() => Promise.resolve({id: 1}))
+  context.push = spy(() => Promise.resolve({key: 'created'}))
+  await createEngagement.call(context, 'abc123', '123abc')
+  t.equal(context.push.callCount, 1)
+})
 
 async function removeEngagement(this:Context, key:string) {
   const {assignments} = await this.get({assignments: {engagementKey: key}})
