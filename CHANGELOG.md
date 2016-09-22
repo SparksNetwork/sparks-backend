@@ -1,3 +1,18 @@
+<a name="1.0.32"></a>
+## [1.0.32](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.31...v1.0.32) (2016-09-22)
+
+
+### Bug Fixes
+
+* **find-by-script:** remove data dump.  no sensitive info. ([3b4f1d2](https://github.com/SparksNetwork/sparks-backend/commit/3b4f1d2))
+
+
+### Features
+
+* **find-by-script:** can run find-by at command line to search for records by field ([f2976a2](https://github.com/SparksNetwork/sparks-backend/commit/f2976a2))
+
+
+
 <a name="1.0.31"></a>
 ## [1.0.31](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.30...v1.0.31) (2016-09-21)
 
