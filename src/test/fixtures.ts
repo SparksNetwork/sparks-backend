@@ -190,7 +190,10 @@ export function Engagements() {
       isPaid: false,
       isConfirmed: false,
       isAccepted: false,
-      paymentClientToken: 'imaprettyboy',
+      payment: {
+        clientToken: 'imaprettyboy',
+        gatewayId: 'volunteer'
+      }
     },
   }
 
@@ -239,6 +242,21 @@ export function Memberships() {
   return 'Memberships'
 }
 
+function GatewayCustomers() {
+  const gatewaycustomers = {
+    volunteer: {
+      profileKey: 'volunteer',
+      gatwayId: 'abc123'
+    }
+  }
+
+  this.add('init:GatewayCustomers', async function() {
+    await this.act('role:Fixtures,cmd:set', {fixtures:{gatewaycustomers}})
+  })
+
+  return 'GatewayCustomers'
+}
+
 export default function() {
   this
     .use(Profiles)
@@ -251,5 +269,6 @@ export default function() {
     .use(Engagements)
     .use(Assignments)
     .use(Memberships)
+    .use(GatewayCustomers)
   return 'fixtures'
 }

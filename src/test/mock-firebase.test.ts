@@ -1,4 +1,3 @@
-/// <reference path="../tape-async.d.ts" />
 import * as tapeTest from 'tape-async'
 import * as Seneca from 'seneca-await'
 import mockFirebase from './mock-firebase'
@@ -126,5 +125,15 @@ seneca.ready(function() {
     t.equal(response.key, 'howard')
     const howard = await this.act('role:Firebase,model:People,cmd:get,key:howard')
     t.false(howard, 'record not found')
+  })
+
+  test('Firebase / inc', async function(t) {
+    const response = await this.act('role:Firebase,model:People,cmd:inc,child:thing,by:2,key:howard')
+    t.equal(response.key, 'howard')
+    let howard = await this.act('role:Firebase,model:People,cmd:get,key:howard')
+    t.equal(howard.thing, 2)
+    await this.act('role:Firebase,model:People,cmd:inc,child:thing,key:howard')
+    howard = await this.act('role:Firebase,model:People,cmd:get,key:howard')
+    t.equal(howard.thing, 3)
   })
 })

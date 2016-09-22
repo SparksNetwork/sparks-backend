@@ -1,8 +1,7 @@
-/* eslint-disable max-nested-callbacks */
-import load from './load'
-import {propEq, join, find, tap, concat, compose, curryN, merge} from 'ramda'
+import {firebase} from './firebase/process-firebase'
+import {propEq, join, find, tap, concat, merge, prop} from 'ramda'
 import {format} from 'util'
-import {objToRows} from './collections'
+import {objToRows} from './firebase/collections'
 
 function out(...msg:any[]):void {
   const str:string = format(...msg)
@@ -10,14 +9,6 @@ function out(...msg:any[]):void {
 }
 
 const PROJECT:any = process.argv[2] || null
-
-const PROJECT_NAMES = {
-  'Northern Nights': 'NN2016',
-  'Disc Jam': 'DISCJAM2016',
-  'Wild Woods': 'WILDWOODS2016',
-  'Cosmic Alignment': 'Cosmic2016',
-  'Stilldream Festival': 'STILLDREAM2016',
-}
 
 function getStatusCode(engagement) {
   const {
@@ -51,27 +42,7 @@ function sortByName([a], [b]) {
 }
 
 async function exportVols() {
-  const seneca = await load()
-  const {fb} = await seneca.act({role:'Firebase'})
-
-  const getProfile = engagement =>
-    fb.child('Profiles')
-      .child(engagement.profileKey)
-      .once('value')
-      .then(s => s.val())
-      .then(val => [val, getStatusCode(engagement)])
-
-  const getProject = e =>
-    fb.child('Opps')
-      .child(e.oppKey)
-      .once('value')
-      .then(s => s.val())
-      .then(x =>
-        fb.child('Projects')
-          .child(x.projectKey)
-          .once('value')
-          .then(s => [s.val(), e])
-      )
+  const fb = await firebase()
 
   fb.child('Projects').once('value')
   .then(s => s.val())
@@ -95,7 +66,7 @@ async function exportVols() {
         .then(snap)
         .then(objToRows)
         .then(tap<any>(rows => out('Found', rows.length, 'Engagements')))
-        .then(engs => Promise.all(engs.map(eng =>
+        .then(engs => Promise.all(engs.filter(prop('profileKey')).map(eng =>
           fb.child('Profiles').child(eng.profileKey).once('value')
           .then(snap)
           .then(profile => merge(eng, {profile}))
@@ -105,12 +76,12 @@ async function exportVols() {
     )
   )
   .then(opps =>
-    opps.reduce((acc, opp) =>
+    opps.reduce((acc, opp:any) =>
       concat(acc, opp.engs.map(eng =>
         [eng.profile.fullName,
           eng.profile.email,
           eng.profile.phone,
-          PROJECT_NAMES[PROJECT],
+          PROJECT,
           getStatusCode(eng),
           opp.name,
         ]

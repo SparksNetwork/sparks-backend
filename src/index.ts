@@ -1,8 +1,15 @@
+try {
+  require("source-map-support").install()
+} catch (err) {}
 import * as express from 'express'
-import senecaSn from './seneca-sn'
 import * as Seneca from 'seneca-await'
-import {startDispatch} from './dispatch'
+import {firebase} from './firebase/process-firebase'
+import firebaseSn from './firebase/firebase-sn'
+import senecaSn from './seneca-sn'
 import cfg from './cfg'
+import {startDispatch} from './dispatch'
+import {startMetrics} from './metrics'
+import {startPing} from "./pingpong/ping";
 
 const app = express()
 
@@ -20,11 +27,20 @@ const seneca = Seneca({
 })
 
 async function start() {
+  const fb = await firebase()
+
+  seneca.use(firebaseSn, fb)
   seneca.use(senecaSn, {cfg})
   await seneca.ready()
-  const {fb} = await seneca.act({role: 'Firebase'})
+
   console.log('Starting dispatch')
-  startDispatch(fb.child('!queue'), seneca)
+  const queue = startDispatch(fb.child('!queue'), seneca)
+
+  console.log('Starting metrics')
+  startMetrics(fb.child('!queue').child('metrics'), fb.child('metrics'))
+
+  console.log('Starting pingpong')
+  startPing(fb.child('!queue'))
 }
 
 start()

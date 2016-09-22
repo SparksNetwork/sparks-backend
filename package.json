@@ -1,6 +1,6 @@
 {
   "name": "sparks-backend",
-  "version": "1.0.20",
+  "version": "1.0.33",
   "description": "sparks backend",
   "engines": {
     "node": "6.1.0"
@@ -8,8 +8,10 @@
   "scripts": {
     "start": "node dist/index.js",
     "heroku-postbuild": "npm run build",
-    "build": "tsc",
-    "test": "npm run build && node_modules/.bin/tap --cov dist/**/*.test.js src/*.test.js",
+    "build": "tsc && babel -d dist dist",
+    "test": "bin/test",
+    "testci": "tsc && parallel --no-notice -j4 \"node --no-warnings {} 2>/dev/null | tap-xunit 1> ${$CIRCLE_TEST_REPORTS}/{#}.xml\" ::: dist/**/*.js",
+    "watch": "fswatch -0 -Ei \".*\\.ts$\" -Ee \".*\\.ts\" src | xargs -0 -n1 -I {} bash -c \"clear && ts-node {} | tap-min\"",
     "lint": "node_modules/.bin/tslint src/**/*.ts",
     "commit": "git-cz",
     "version": "npm run changelog",
@@ -37,6 +39,7 @@
     }
   },
   "devDependencies": {
+    "babel-cli": "^6.14.0",
     "blue-tape": "^1.0.0",
     "commitizen": "^2.8.6",
     "conventional-changelog": "^1.1.0",
@@ -44,6 +47,7 @@
     "cz-customizable": "^4.0.0",
     "ghooks": "^1.3.2",
     "nodemon": "^1.10.1",
+    "source-map-support": "^0.4.2",
     "tap": "^7.0.1",
     "tape": "^4.5.1",
     "tape-async": "^2.1.0",
@@ -52,20 +56,22 @@
   },
   "dependencies": {
     "bluebird": "^3.4.6",
-    "braintree": "^1.37.1",
-    "braintree-node": "^1.0.9",
+    "braintree": "^1.41.0",
+    "braintree-node": "^1.1.1",
     "express": "^4.13.4",
     "firebase": "^2.4.1",
     "firebase-queue": "^1.2.1",
     "inflection": "^1.10.0",
     "moment": "^2.13.0",
     "moment-timezone": "^0.5.4",
+    "node-uuid": "^1.4.7",
     "prfun": "^2.1.3",
     "ramda": "^0.21.0",
     "rx": "^4.0.8",
     "sendgrid": "^2.0.0",
     "seneca": "^2.1.0",
     "seneca-await": "0.0.12",
+    "sinon": "^1.17.5",
     "ts-node": "^1.3.0",
     "typescript": "^2.1.0-dev.20160804",
     "typings": "^1.3.3"

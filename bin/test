@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+tsc
+
+COMMAND="node --no-warnings {} 2>/dev/null"
+
+if [ -n "${CIRCLE_TEST_REPORTS}" ]
+then
+    mkdir -p $CIRCLE_TEST_REPORTS/junit
+    COMMAND="$COMMAND | node_modules/.bin/tap-xunit 1> $CIRCLE_TEST_REPORTS/junit/{#}_{/.}.xml"
+fi
+
+if [ -n "${CIRCLE_NODE_TOTAL}" ]
+then
+    echo "Run parallel tests"
+    testfiles=$(find ./dist -name '*.js' | sort | awk "NR % ${CIRCLE_NODE_TOTAL} == ${CIRCLE_NODE_INDEX}")
+    parallel --no-notice -j4 "$COMMAND" ::: $testfiles
+else
+    echo "Run all tests"
+    find ./dist -name '*.js' | parallel --no-notice -j4 "$COMMAND"
+fi

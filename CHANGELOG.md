@@ -1,3 +1,120 @@
+<a name="1.0.33"></a>
+## [1.0.33](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.32...v1.0.33) (2016-09-22)
+
+
+### Bug Fixes
+
+* **CI:** Tell slack about the build after incrementing the version ([090aee3](https://github.com/SparksNetwork/sparks-backend/commit/090aee3))
+
+
+
+<a name="1.0.32"></a>
+## [1.0.32](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.31...v1.0.32) (2016-09-22)
+
+
+### Bug Fixes
+
+* **find-by-script:** remove data dump.  no sensitive info. ([3b4f1d2](https://github.com/SparksNetwork/sparks-backend/commit/3b4f1d2))
+
+
+### Features
+
+* **find-by-script:** can run find-by at command line to search for records by field ([f2976a2](https://github.com/SparksNetwork/sparks-backend/commit/f2976a2))
+
+
+
+<a name="1.0.31"></a>
+## [1.0.31](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.30...v1.0.31) (2016-09-21)
+
+
+
+<a name="1.0.30"></a>
+## [1.0.30](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.29...v1.0.30) (2016-09-21)
+
+
+### Bug Fixes
+
+* **GatewayCustomers:** context assignment needs to happen to the model ([fbb8675](https://github.com/SparksNetwork/sparks-backend/commit/fbb8675))
+
+
+
+<a name="1.0.29"></a>
+## [1.0.29](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.28...v1.0.29) (2016-09-21)
+
+
+### Features
+
+* **Build:** Add sourcemap support ([116b33a](https://github.com/SparksNetwork/sparks-backend/commit/116b33a))
+* **Engagements:** Add reclaim command for engagements ([6b793de](https://github.com/SparksNetwork/sparks-backend/commit/6b793de))
+* **Engagements:** Bill using a braintree subscription instead of transaction ([cd9c645](https://github.com/SparksNetwork/sparks-backend/commit/cd9c645))
+* **Engagements:** Create a subscription instead of a transaction ([0862aee](https://github.com/SparksNetwork/sparks-backend/commit/0862aee))
+* **Engagements:** Move the payment data into an object under Engagement ([e993f6b](https://github.com/SparksNetwork/sparks-backend/commit/e993f6b))
+
+
+
+<a name="1.0.28"></a>
+## [1.0.28](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.27...v1.0.28) (2016-09-18)
+
+
+
+<a name="1.0.27"></a>
+## [1.0.27](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.26...v1.0.27) (2016-09-18)
+
+
+
+<a name="1.0.26"></a>
+## [1.0.26](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.25...v1.0.26) (2016-09-17)
+
+
+### Bug Fixes
+
+* **Build:** Don't delete all calls with 3 arguments ([b4861ff](https://github.com/SparksNetwork/sparks-backend/commit/b4861ff))
+
+
+
+<a name="1.0.25"></a>
+## [1.0.25](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.24...v1.0.25) (2016-09-17)
+
+
+### Bug Fixes
+
+* **FirebaseGet:** Properly filter out all non-spec properties ([ea2caec](https://github.com/SparksNetwork/sparks-backend/commit/ea2caec))
+* **Test:** Only run tests for run file ([8e57110](https://github.com/SparksNetwork/sparks-backend/commit/8e57110))
+
+
+
+<a name="1.0.24"></a>
+## [1.0.24](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.23...v1.0.24) (2016-09-16)
+
+
+### Bug Fixes
+
+* **Firebase:** Only initialize firebase module once ([3933214](https://github.com/SparksNetwork/sparks-backend/commit/3933214))
+
+
+
+<a name="1.0.23"></a>
+## [1.0.23](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.22...v1.0.23) (2016-09-16)
+
+
+
+<a name="1.0.22"></a>
+## [1.0.22](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.21...v1.0.22) (2016-09-16)
+
+
+
+<a name="1.0.21"></a>
+## [1.0.21](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.20...v1.0.21) (2016-09-16)
+
+
+### Features
+
+* **Dispatch:** Add ping/pong so that dispatch is constantly being run and tested ([7fe9bd3](https://github.com/SparksNetwork/sparks-backend/commit/7fe9bd3))
+* **Metrics:** Add a metric aggregation program ([70090fb](https://github.com/SparksNetwork/sparks-backend/commit/70090fb))
+* **Metrics:** Add metric removal program ([8962af1](https://github.com/SparksNetwork/sparks-backend/commit/8962af1))
+
+
+
 <a name="1.0.20"></a>
 ## [1.0.20](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.19...v1.0.20) (2016-09-15)
 

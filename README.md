@@ -6,6 +6,7 @@ Contains the node server that runs workers against the firebase queue
 
 relies on env vars for specifying:
 
+* `DEBUG` - Set to true for verbose logging
 * `PORT` - what port to listen on for admin view
 * `FIREBASE_HOST` - what fb host to connect to
 * `FIREBASE_TOKEN` - the token to use to auth
@@ -50,6 +51,7 @@ https://console.firebase.google.com/project/my-firebase-name/settings/database
 Now set FIREBASE_HOST and FIREBASE_TOKEN in .env:
 
 ```
+DEBUG=true
 FIREBASE_HOST=https://my-database-name.firebaseio.com
 FIREBASE_TOKEN=token-from-firebase
 POST=8081

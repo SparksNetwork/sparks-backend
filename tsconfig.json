@@ -7,8 +7,10 @@
     "strictNullChecks": true,
     "lib": [
       "es6",
-      "es2015.promise"
-    ]
+      "es2015.promise",
+      "dom"
+    ],
+    "sourceMap": true
   },
   "exclude": [
     "node_modules"

@@ -16,7 +16,7 @@ requiredVars.forEach(v => {
   if (process.env[v]) {
     cfg[v] = process.env[v].trim()
   } else {
-    console.log('Must specify ' + v)
+    process.stderr.write(`Must specify ${v}\n`)
     process.exit()
   }
 })
