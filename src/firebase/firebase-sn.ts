@@ -5,11 +5,7 @@ import {append, reduce} from 'ramda'
 import {Test} from "tape-async";
 import {test} from "../test/test";
 
-interface FirebaseValue {
-  [propName:string]:FirebaseValue | string | boolean | number | FirebaseValue
-}
-
-class Updater {
+export class Updater {
   private seneca:Seneca
   private path:string[]
 

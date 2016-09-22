@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import {
   compose, concat, map, pick, prop, sum, propOr, curry, add, multiply, merge
 } from 'ramda'
-import {Model} from '../firebase/firebase-sn'
+import {Model, Updater} from '../firebase/firebase-sn'
 import defaults from './defaults'
 import {test} from "../test/test";
 import {
@@ -20,6 +20,11 @@ const SPARKS_MIN = 1.0
 interface Payment {
   payment:string
   deposit:string
+}
+
+interface Context extends Updater {
+  act: (pattern:string | SenecaPattern, options?: any) => Promise<any>
+  get: (spec:Spec) => Promise<any>
 }
 
 /**
@@ -131,7 +136,7 @@ test(__filename, 'calcPayment', async function(t) {
   t.deepEqual(calcPayment([com2p, com2d]), {payment: '37.30', deposit: '150.00'})
 })
 
-async function generateClientToken(profileKey:string):Promise<{clientToken:string, gatewayId:string}> {
+async function generateClientToken(this:Context, profileKey:string):Promise<{clientToken:string, gatewayId:string}> {
   const gatewayCustomer:Customer = await this.act('role:GatewayCustomers,cmd:get', {profileKey})
   const response = await this.act('role:gateway,cmd:generateClientToken', {
     options: {customerId: gatewayCustomer.id}
@@ -158,7 +163,7 @@ async function updateShiftCounts(keys:string[]) {
   ))
 }
 
-async function ensureEngagementHasToken(key:string) {
+async function ensureEngagementHasToken(this:Context, key:string) {
   const {engagement} = await this.get({engagement:key})
   if (engagement.payment) { return }
   if (engagement.isPaid) { return }
@@ -205,7 +210,7 @@ test(__filename, 'ensureEngagementHasToken', async function(t:Test) {
   })
 })
 
-async function canChangeOpp(engagement, oppKey, userRole) {
+async function canChangeOpp(this:Context, engagement, oppKey, userRole) {
   if (userRole !== 'project') { return false }
   if (engagement.isConfirmed) { return false }
   if (engagement.oppKey === oppKey) { return false }
@@ -216,7 +221,7 @@ async function canChangeOpp(engagement, oppKey, userRole) {
   return oldOpp && newOpp && oldOpp.projectKey === newOpp.projectKey
 }
 
-async function updateEngagement(key:string, values:any, userRole:string) {
+async function updateEngagement(this:Context, key:string, values:any, userRole:string) {
   await ensureEngagementHasToken.call(this, key)
 
   const allowedFields = {
@@ -254,7 +259,7 @@ async function updateEngagement(key:string, values:any, userRole:string) {
   return {key}
 }
 
-async function makePayment(key:string, nonce:string, payment:Payment):Promise<boolean> {
+async function makePayment(this:Context, key:string, nonce:string, payment:Payment):Promise<boolean> {
   try {
     const paymentAddon:SubscriptionAddOn = {
       amount: payment.payment,
@@ -308,7 +313,7 @@ async function makePayment(key:string, nonce:string, payment:Payment):Promise<bo
   }
 }
 
-async function createEngagement(oppKey, profileKey) {
+async function createEngagement(this:Context, oppKey, profileKey) {
   const token = await generateClientToken.call(this, profileKey)
 
   const {key} = await this.push({
@@ -323,7 +328,7 @@ async function createEngagement(oppKey, profileKey) {
   return {key}
 }
 
-async function removeEngagement(key:string) {
+async function removeEngagement(this:Context, key:string) {
   const {assignments} = await this.get({assignments: {engagementKey: key}})
 
   await removeAssignments.call(this, assignments.map(prop('$key')))
@@ -334,7 +339,7 @@ async function removeEngagement(key:string) {
 }
 
 
-async function changeOpp(engagement, oppKey) {
+async function changeOpp(this:Context, engagement, oppKey) {
   const {memberships} = await this.get({memberships: {engagementKey: engagement.$key}})
 
   await Promise.all(
@@ -355,7 +360,7 @@ async function changeOpp(engagement, oppKey) {
   return {key: engagement.$key}
 }
 
-async function confirmWithoutPay(uid, key) {
+async function confirmWithoutPay(this:Context, uid, key) {
   const {engagement, opp, commitments} = await this.get({
     engagement: key,
     opp: ['engagement', 'oppKey'],
@@ -387,7 +392,7 @@ async function confirmWithoutPay(uid, key) {
   return {key}
 }
 
-async function payEngagement(key, values) {
+async function payEngagement(this:Context, key, values) {
   debug('payEngagement', key, values)
 
   const {engagement, opp, commitments} = await this.get({
@@ -410,7 +415,7 @@ async function payEngagement(key, values) {
   return {key}
 }
 
-async function reclaimEngagement(key:string) {
+async function reclaimEngagement(this:Context, key:string) {
   const {engagement} = await this.get({engagement: key})
   assert(engagement, 'Engagement does not exist')
   assert(!engagement.isDepositPaid, 'Deposit already paid')
@@ -462,11 +467,10 @@ async function reclaimEngagement(key:string) {
 }
 
 function Engagements() {
-  const seneca = this
-  const act = seneca.act.bind(seneca)
+  const act = this.act.bind(this)
   const get:(Spec) => Promise<FulfilledSpec> = spec => act('role:Firebase,cmd:get', spec)
-  const Engagements = Model('Engagements')(seneca)
-  const context = Object.assign(Engagements, {act, get})
+  const Engagements = Model('Engagements')(this)
+  const context = Object.assign(Engagements, {act, get}) as Context
 
   this.add({role:'Engagements',cmd:'create'}, async function({oppKey, profileKey}) {
     return await createEngagement.call(context, oppKey, profileKey)

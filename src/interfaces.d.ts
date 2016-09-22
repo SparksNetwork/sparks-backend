@@ -20,6 +20,10 @@ declare interface AnyResponse {
   [propName:string]:any
 }
 
+declare interface FirebaseValue {
+  [propName:string]: FirebaseValue | string | boolean | number
+}
+
 declare type DispatchResponse = RejectResponse | ErrorResponse | PayloadResponse
 declare type TaskResponse = KeyResponse | ErrorResponse
 declare type AuthResponse = RejectResponse | ErrorResponse | AnyResponse
