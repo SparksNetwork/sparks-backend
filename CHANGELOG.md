@@ -1,3 +1,13 @@
+<a name="1.0.33"></a>
+## [1.0.33](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.32...v1.0.33) (2016-09-22)
+
+
+### Bug Fixes
+
+* **CI:** Tell slack about the build after incrementing the version ([090aee3](https://github.com/SparksNetwork/sparks-backend/commit/090aee3))
+
+
+
 <a name="1.0.32"></a>
 ## [1.0.32](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.31...v1.0.32) (2016-09-22)
 
