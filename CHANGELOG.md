@@ -1,3 +1,13 @@
+<a name="1.0.35"></a>
+## [1.0.35](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.34...v1.0.35) (2016-09-24)
+
+
+### Features
+
+* **Engagements:** Make sure engagements are unique before creating them ([8241252](https://github.com/SparksNetwork/sparks-backend/commit/8241252))
+
+
+
 <a name="1.0.34"></a>
 ## [1.0.34](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.33...v1.0.34) (2016-09-22)
 
