@@ -54,7 +54,7 @@
     "nodemon": "^1.10.1",
     "source-map-support": "^0.4.2",
     "tap": "^7.0.1",
-    "tape": "^4.5.1",
+    "tape": "^4.6.1",
     "tape-async": "^2.1.0",
     "tslint": "^3.15.1",
     "validate-commit-msg": "^2.8.2"
