@@ -1,3 +1,13 @@
+<a name="1.0.42"></a>
+## [1.0.42](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.41...v1.0.42) (2016-10-06)
+
+
+### Features
+
+* **export:** export labels INCOMPLETE apps ([3cf27e1](https://github.com/SparksNetwork/sparks-backend/commit/3cf27e1))
+
+
+
 <a name="1.0.41"></a>
 ## [1.0.41](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.40...v1.0.41) (2016-10-06)
 
