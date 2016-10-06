@@ -37,17 +37,27 @@
         "GatewayCustomers": {
           ".indexOn": "profileKey"
         },
+        "metrics": {
+          ".read": "auth.uid === 'firebase-queue'",
+          ".write": "auth.uid === 'firebase-queue'"
+        },
         "!queue": {
+          "metrics": {
+            ".read": "auth.uid === 'firebase-queue'",
+            ".write": "auth.uid === 'firebase-queue'"
+          },
           "tasks": {
             ".indexOn": "_state",
             "$taskId": {
               ".write": true,
-              ".validate": "newData.child('uid').val() == auth.uid"
+              ".validate": "auth.uid === 'firebase-queue' || (!data.exists() && newData.child('uid').val() == auth.uid)"
             }
           },
           "responses": {
             "$taskId": {
-              ".write": true
+              ".read": "data.child('uid').val() === auth.uid",
+              ".write": "auth.uid === 'firebase-queue' || data.child('uid').val() === auth.uid",
+              ".validate": "auth.uid === 'firebase-queue' || (data.child('uid').val() === auth.uid && data.exists() && !newData.exists())"
             }
           },
           "brokenResponses": {
