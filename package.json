@@ -39,9 +39,7 @@
     }
   },
   "greenkeeper": {
-    "ignore": [
-      "sendgrid"
-    ]
+    "ignore": ["sendgrid", "firebase", "seneca"]
   },
   "devDependencies": {
     "babel-cli": "^6.16.0",
