@@ -1,6 +1,6 @@
 {
   "name": "sparks-backend",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "description": "sparks backend",
   "engines": {
     "node": "6.1.0"
@@ -39,7 +39,9 @@
     }
   },
   "greenkeeper": {
-    "ignore": ["sendgrid"]
+    "ignore": [
+      "sendgrid"
+    ]
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",

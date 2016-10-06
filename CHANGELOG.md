@@ -1,3 +1,8 @@
+<a name="1.0.36"></a>
+## [1.0.36](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.35...v1.0.36) (2016-10-06)
+
+
+
 <a name="1.0.35"></a>
 ## [1.0.35](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.34...v1.0.35) (2016-09-24)
 
