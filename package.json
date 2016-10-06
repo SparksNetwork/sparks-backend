@@ -38,6 +38,9 @@
       "commit-msg": "node ./node_modules/validate-commit-msg/index.js"
     }
   },
+  "greenkeeper": {
+    "ignore": ["sendgrid"]
+  },
   "devDependencies": {
     "babel-cli": "^6.14.0",
     "blue-tape": "^1.0.0",
