@@ -44,7 +44,7 @@
     ]
   },
   "devDependencies": {
-    "babel-cli": "^6.14.0",
+    "babel-cli": "^6.16.0",
     "blue-tape": "^1.0.0",
     "commitizen": "^2.8.6",
     "conventional-changelog": "^1.1.0",
