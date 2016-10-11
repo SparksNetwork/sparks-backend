@@ -1,3 +1,13 @@
+<a name="1.0.43"></a>
+## [1.0.43](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.42...v1.0.43) (2016-10-11)
+
+
+### Features
+
+* **Firebase:** Tighten up the database rules ([74a7a84](https://github.com/SparksNetwork/sparks-backend/commit/74a7a84))
+
+
+
 <a name="1.0.42"></a>
 ## [1.0.42](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.41...v1.0.42) (2016-10-06)
 
