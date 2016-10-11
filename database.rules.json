@@ -1,61 +1,72 @@
 {
-    "rules": {
-        ".read": true,
-        "Arrivals": {
-          ".indexOn": ["profileKey", "projectKey"]
-        },
-        "Engagements": {
-          ".indexOn": ["profileKey", "oppKey", "transaction/id"]
-        },
-        "Shifts": {
-          ".indexOn": "teamKey"
-        },
-        "Opps": {
-          ".indexOn": "projectKey"
-        },
-        "Profiles": {
-          ".indexOn": "uid"
-        },
-        "Projects": {
-          ".indexOn": "ownerProfileKey"
-        },
-        "Teams": {
-          ".indexOn": "projectKey"
-        },
-        "Commitments": {
-          ".indexOn": "oppKey"
-        },
-        "Assignments": {
-          ".indexOn": ["profileKey", "shiftKey", "oppKey", "engagementKey"]
-        },
-        "Memberships": {
-          ".indexOn": ["engagementKey", "teamKey"]
-        },
-        "Organizers": {
-          ".indexOn": ["projectKey", "profileKey"]
-        },
-        "GatewayCustomers": {
-          ".indexOn": "profileKey"
-        },
-        "!queue": {
-          "tasks": {
-            ".indexOn": "_state",
-            "$taskId": {
-              ".write": true,
-              ".validate": "newData.child('uid').val() == auth.uid"
-            }
-          },
-          "responses": {
-            "$taskId": {
-              ".write": true
-            }
-          },
-          "brokenResponses": {
-            "$taskId": {
-              ".write": true,
-              ".validate": "(newData.child('uid').val() == auth.uid) || ((newData.val() == null) && (data.child('uid').val() == auth.uid))"
-            }
-          }          
+  "rules": {
+    ".read": true,
+    ".write": "auth.uid === 'crud'",
+    "Arrivals": {
+      ".indexOn": ["profileKey", "projectKey"]
+    },
+    "Engagements": {
+      ".indexOn": ["profileKey", "oppKey", "transaction/id"]
+    },
+    "Shifts": {
+      ".indexOn": "teamKey"
+    },
+    "Opps": {
+      ".indexOn": "projectKey"
+    },
+    "Profiles": {
+      ".indexOn": "uid"
+    },
+    "Projects": {
+      ".indexOn": "ownerProfileKey"
+    },
+    "Teams": {
+      ".indexOn": "projectKey"
+    },
+    "Commitments": {
+      ".indexOn": "oppKey"
+    },
+    "Assignments": {
+      ".indexOn": ["profileKey", "shiftKey", "oppKey", "engagementKey"]
+    },
+    "Memberships": {
+      ".indexOn": ["engagementKey", "teamKey"]
+    },
+    "Organizers": {
+      ".indexOn": ["projectKey", "profileKey"]
+    },
+    "GatewayCustomers": {
+      ".indexOn": "profileKey"
+    },
+    "metrics": {
+      ".read": "auth.uid === 'firebase-queue'",
+      ".write": "auth.uid === 'firebase-queue'"
+    },
+    "!queue": {
+      "metrics": {
+        ".read": "auth.uid === 'firebase-queue'",
+        ".write": "auth.uid === 'firebase-queue'"
+      },
+      "tasks": {
+        ".indexOn": "_state",
+        "$taskId": {
+          ".write": true,
+          ".validate": "auth.uid === 'firebase-queue' || (!data.exists() && newData.child('uid').val() === auth.uid)"
         }
+      },
+      "responses": {
+        "$taskId": {
+          ".read": "$taskId === auth.uid",
+          ".write": "auth.uid === 'firebase-queue' || $taskId === auth.uid",
+          ".validate": "auth.uid === 'firebase-queue' || ($taskId === auth.uid && !newData.exists())"
+        }
+      },
+      "brokenResponses": {
+        "$taskId": {
+          ".write": true,
+          ".validate": "(newData.child('uid').val() == auth.uid) || ((newData.val() == null) && (data.child('uid').val() == auth.uid))"
+        }
+      }
     }
+  }
 }
