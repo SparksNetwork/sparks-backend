@@ -1,3 +1,13 @@
+<a name="1.0.44"></a>
+## [1.0.44](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.43...v1.0.44) (2016-10-12)
+
+
+### Bug Fixes
+
+* **Firebase:** response rule applies to second level responses ([f8eb78a](https://github.com/SparksNetwork/sparks-backend/commit/f8eb78a))
+
+
+
 <a name="1.0.43"></a>
 ## [1.0.43](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.42...v1.0.43) (2016-10-11)
 
