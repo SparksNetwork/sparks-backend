@@ -55,10 +55,13 @@
         }
       },
       "responses": {
-        "$taskId": {
-          ".read": "$taskId === auth.uid",
-          ".write": "auth.uid === 'firebase-queue' || $taskId === auth.uid",
-          ".validate": "auth.uid === 'firebase-queue' || ($taskId === auth.uid && !newData.exists())"
+        "$uid": {
+          ".read": "$uid === auth.uid",
+          ".write": "auth.uid === 'firebase-queue' || $uid === auth.uid",
+          "$taskId": {
+            ".read": "$uid === auth.uid",
+            ".write": "auth.uid === 'firebase-queue' || $uid === auth.uid"
+          }
         }
       },
       "brokenResponses": {
