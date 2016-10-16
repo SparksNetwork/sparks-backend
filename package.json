@@ -80,7 +80,7 @@
     "seneca": "^2.1.0",
     "seneca-await": "0.0.12",
     "sinon": "^1.17.6",
-    "ts-node": "^1.5.2",
+    "ts-node": "^1.6.0",
     "typescript": "^2.1.0-dev.20160804",
     "typings": "^1.4.0"
   }
