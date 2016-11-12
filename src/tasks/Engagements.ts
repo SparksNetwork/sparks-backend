@@ -43,7 +43,7 @@ test(__filename, 'extractAmount', async function(t) {
   t.equal(extractAmount('$0.00'), 0, 'extracts $0.00')
 })
 
-const chopFloat = curry((chop, amount:number) =>
+const chopFloat = curry((chop: number, amount:number) =>
   Number(amount.toFixed(chop))
 )
 
