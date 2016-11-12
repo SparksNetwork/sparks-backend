@@ -1,6 +1,6 @@
 {
   "name": "sparks-backend",
-  "version": "1.0.45",
+  "version": "1.0.46",
   "description": "sparks backend",
   "engines": {
     "node": "6.1.0"

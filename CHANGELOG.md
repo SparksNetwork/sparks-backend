@@ -1,3 +1,13 @@
+<a name="1.0.46"></a>
+## [1.0.46](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.45...v1.0.46) (2016-11-12)
+
+
+### Bug Fixes
+
+* **tasks:** fix compiliation issue of {} not being assignable to number ([6549417](https://github.com/SparksNetwork/sparks-backend/commit/6549417))
+
+
+
 <a name="1.0.45"></a>
 ## [1.0.45](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.44...v1.0.45) (2016-10-15)
 
