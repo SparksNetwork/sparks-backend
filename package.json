@@ -57,7 +57,7 @@
     "source-map-support": "^0.4.3",
     "tap": "^7.1.2",
     "tap-xunit": "^1.4.0",
-    "tape": "^4.6.1",
+    "tape": "^4.6.3",
     "tape-async": "^2.1.0",
     "tslint": "^3.15.1",
     "validate-commit-msg": "^2.8.2"
