@@ -153,7 +153,7 @@ function toMergeFields(profiles, projects, opps, engagements) {
             SOURCECODE: 'app',
             ENGAGEMENT: engagementStatus(e),
             PROJECT: project.code,
-            OPPKEY: e['oppKey'],
+            OPP: opp.name,
           }
         }
       }
