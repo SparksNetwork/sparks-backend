@@ -281,6 +281,10 @@ async function makePayment(this:Context, key:string, nonce:string, payment:Payme
       }
     }
 
+    await this.update(key, {
+      isPaying: true
+    });
+
     debug('creating subscription', options)
     const {success, subscription} = await this.act('role:gateway,cmd:createSubscription', {options})
     debug('subscription response', success, subscription)
@@ -289,6 +293,7 @@ async function makePayment(this:Context, key:string, nonce:string, payment:Payme
     await this.update(key, {
       amountPaid: transaction.amount,
       depositAmount: payment.deposit,
+      isPaying: false,
       isPaid: success,
       isConfirmed: success
     })
@@ -305,6 +310,7 @@ async function makePayment(this:Context, key:string, nonce:string, payment:Payme
   } catch (err) {
     error('GATEWAY TRANSACTION ERROR', err)
     await this.update(key, {
+      isPaying: false,
       isPaid: false,
       isConfirmed: false,
       paymentError: err.type,
