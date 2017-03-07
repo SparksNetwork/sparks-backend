@@ -31,6 +31,7 @@ function getStatusCode(engagement) {
     }
     return 'APPLIED'
   }
+  return 'INCOMPLETE'
 }
 
 const snap = s => s.val()
@@ -48,7 +49,7 @@ async function exportVols() {
   .then(s => s.val())
   .then(objToRows)
   .then(find(propEq('name', PROJECT)))
-  .then(tap<any>(p => out('Found project', p.name)))
+  .then(tap<any>(p => out('Found project', p)))
   .then(project =>
     fb.child('Opps')
       .orderByChild('projectKey')

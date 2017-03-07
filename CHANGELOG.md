@@ -1,3 +1,78 @@
+<a name="1.0.46"></a>
+## [1.0.46](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.45...v1.0.46) (2016-11-12)
+
+
+### Bug Fixes
+
+* **tasks:** fix compiliation issue of {} not being assignable to number ([6549417](https://github.com/SparksNetwork/sparks-backend/commit/6549417))
+
+
+
+<a name="1.0.45"></a>
+## [1.0.45](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.44...v1.0.45) (2016-10-15)
+
+
+
+<a name="1.0.44"></a>
+## [1.0.44](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.43...v1.0.44) (2016-10-12)
+
+
+### Bug Fixes
+
+* **Firebase:** response rule applies to second level responses ([f8eb78a](https://github.com/SparksNetwork/sparks-backend/commit/f8eb78a))
+
+
+
+<a name="1.0.43"></a>
+## [1.0.43](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.42...v1.0.43) (2016-10-11)
+
+
+### Features
+
+* **Firebase:** Tighten up the database rules ([74a7a84](https://github.com/SparksNetwork/sparks-backend/commit/74a7a84))
+
+
+
+<a name="1.0.42"></a>
+## [1.0.42](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.41...v1.0.42) (2016-10-06)
+
+
+### Features
+
+* **export:** export labels INCOMPLETE apps ([3cf27e1](https://github.com/SparksNetwork/sparks-backend/commit/3cf27e1))
+
+
+
+<a name="1.0.41"></a>
+## [1.0.41](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.40...v1.0.41) (2016-10-06)
+
+
+
+<a name="1.0.40"></a>
+## [1.0.40](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.39...v1.0.40) (2016-10-06)
+
+
+
+<a name="1.0.39"></a>
+## [1.0.39](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.38...v1.0.39) (2016-10-06)
+
+
+
+<a name="1.0.38"></a>
+## [1.0.38](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.37...v1.0.38) (2016-10-06)
+
+
+
+<a name="1.0.37"></a>
+## [1.0.37](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.36...v1.0.37) (2016-10-06)
+
+
+
+<a name="1.0.36"></a>
+## [1.0.36](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.35...v1.0.36) (2016-10-06)
+
+
+
 <a name="1.0.35"></a>
 ## [1.0.35](https://github.com/SparksNetwork/sparks-backend/compare/v1.0.34...v1.0.35) (2016-09-24)
 
