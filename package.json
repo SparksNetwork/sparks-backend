@@ -63,7 +63,7 @@
     "validate-commit-msg": "^2.8.2"
   },
   "dependencies": {
-    "bluebird": "^3.4.6",
+    "bluebird": "^3.4.7",
     "braintree": "^1.41.0",
     "braintree-node": "^1.1.1",
     "crypto": "0.0.3",
