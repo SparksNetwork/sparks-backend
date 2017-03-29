@@ -59,7 +59,7 @@
     "tap-xunit": "^1.4.0",
     "tape": "^4.6.1",
     "tape-async": "^2.1.0",
-    "tslint": "^3.15.1",
+    "tslint": "^4.1.1",
     "validate-commit-msg": "^2.8.2"
   },
   "dependencies": {
