@@ -69,7 +69,7 @@
     "crypto": "0.0.3",
     "express": "^4.13.4",
     "firebase": "^2.4.1",
-    "firebase-queue": "^1.2.1",
+    "firebase-queue": "^1.6.1",
     "inflection": "^1.10.0",
     "mailchimp-api-v3": "^1.7.0",
     "moment": "^2.15.1",
