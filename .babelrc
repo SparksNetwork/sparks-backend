@@ -1,3 +1,4 @@
 {
-  "plugins": ["./babel-test"]
+  "plugins": ["./babel-test"],
+  "presets": ["es2015", "stage-2"]
 }
